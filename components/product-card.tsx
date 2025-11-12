@@ -38,18 +38,18 @@ export function ProductCard({ name, slug, price, image_url, rating, reviews_coun
       <Link href={`/products/${slug}`} className="block">
         <div className="relative">
           <AspectRatio ratio={4 / 3}>
-            {image_url ? (
-              <Image
+          {image_url ? (
+            <Image
                 src={image_url}
-                alt={name}
-                fill
+              alt={name}
+              fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
+            />
+          ) : (
               <div className="flex h-full w-full items-center justify-center bg-[#F5F1ED] text-sm text-[#8B6F47]">
                 Imagen no disponible
-              </div>
-            )}
+            </div>
+          )}
           </AspectRatio>
           <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
           <Badge
@@ -71,19 +71,19 @@ export function ProductCard({ name, slug, price, image_url, rating, reviews_coun
             className="line-clamp-2 text-lg font-semibold text-[#3D2817] transition hover:text-[#5C4033]"
           >
             {name}
-          </Link>
+        </Link>
 
           <div className="flex items-center gap-2 text-xs text-[#8B6F47]">
             <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, index) => (
-                <Star
+              <Star
                   key={index}
                   className={cn(
                     "h-3.5 w-3.5 transition",
                     index < roundedRating ? "fill-[#C97D2E] text-[#C97D2E]" : "text-[#E4D8C8]"
                   )}
-                />
-              ))}
+              />
+            ))}
             </div>
             <span>({reviews_count} reseñas)</span>
           </div>

@@ -65,7 +65,7 @@ export default function ProductsPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F1ED] text-[#5C4033] font-semibold">
                     02
                   </div>
-                  <div>
+          <div>
                     <h3 className="font-semibold text-[#3D2817]">Para tu oficina</h3>
                     <p className="text-sm text-[#8B6F47]">Organización inteligente, suministros premium y más.</p>
                   </div>

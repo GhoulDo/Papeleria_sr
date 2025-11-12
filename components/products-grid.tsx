@@ -147,29 +147,29 @@ export function ProductsGrid({
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+          <Input
               placeholder="Buscar por nombre o palabra clave..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
               className="pl-10 h-11 bg-white/70 backdrop-blur"
-            />
-          </div>
+          />
+        </div>
 
           <div className="flex items-center justify-end gap-2">
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground hidden lg:block" aria-hidden />
-            <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="h-11 bg-white/70 backdrop-blur">
                 <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
+            </SelectTrigger>
+            <SelectContent>
                 <SelectItem value="newest">Novedades</SelectItem>
-                <SelectItem value="price-low">Precio: Menor a Mayor</SelectItem>
-                <SelectItem value="price-high">Precio: Mayor a Menor</SelectItem>
+              <SelectItem value="price-low">Precio: Menor a Mayor</SelectItem>
+              <SelectItem value="price-high">Precio: Mayor a Menor</SelectItem>
                 <SelectItem value="rating">Mejor valorados</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            </SelectContent>
+          </Select>
         </div>
+      </div>
 
         <div className="flex items-center lg:justify-end rounded-xl bg-[#F5F1ED] border border-[#D4C4B0]/70 px-4 py-3 text-sm text-muted-foreground shadow-sm">
           {isLoading ? (
@@ -233,14 +233,14 @@ export function ProductsGrid({
                 Ajusta la búsqueda, cambia el orden o explora otra categoría para continuar descubriendo productos.
               </p>
             </div>
-          </div>
-        ) : (
+        </div>
+      ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
-        )}
+          {products.map((product) => (
+            <ProductCard key={product.id} {...product} />
+          ))}
+        </div>
+      )}
       </div>
     </div>
   )

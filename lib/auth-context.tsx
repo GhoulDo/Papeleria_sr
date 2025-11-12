@@ -88,11 +88,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return getUser(true)
         }
       } finally {
+        // Asegurar que loading siempre se establezca en false después de un tiempo máximo
         if (mountedRef.current) {
           setLoading(false)
         }
       }
     }
+
+    // Timeout de seguridad: si después de 5 segundos aún está cargando, forzar loading a false
+    const loadingTimeout = setTimeout(() => {
+      if (mountedRef.current) {
+        setLoading(false)
+      }
+    }, 5000)
 
     getUser()
 
@@ -122,50 +130,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    // Verificación periódica del estado de autenticación (cada 30 segundos)
-    // Esto ayuda a mantener la sincronización en producción
-    const intervalId = setInterval(async () => {
-      if (!mountedRef.current) return
+    // Verificación periódica opcional - solo si la página está activa y han pasado 5 minutos
+    // Esto es menos agresivo y solo se ejecuta cuando realmente es necesario
+    let lastCheckTime = Date.now()
+    const CHECK_INTERVAL = 300000 // 5 minutos (mucho menos frecuente)
+    let intervalId: NodeJS.Timeout | null = null
+    
+    // Solo iniciar el intervalo si la página está visible (no en background)
+    const startInterval = () => {
+      if (intervalId) return // Ya está iniciado
       
-      try {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser()
+      intervalId = setInterval(async () => {
+        if (!mountedRef.current) return
         
-        // Usar una función de actualización para obtener el estado más reciente
-        setUser((prevUser) => {
-          // Solo actualizar si el estado cambió
-          if (currentUser?.id !== prevUser?.id) {
-            if (mountedRef.current) {
-              // Actualizar el rol si hay un usuario nuevo
-              if (currentUser) {
-                fetchUserRole(currentUser.id).then((role) => {
+        // Solo verificar si la página está visible
+        if (document.hidden) {
+          return
+        }
+        
+        // Solo verificar si han pasado al menos 5 minutos desde la última verificación
+        const timeSinceLastCheck = Date.now() - lastCheckTime
+        if (timeSinceLastCheck < CHECK_INTERVAL) {
+          return
+        }
+        
+        lastCheckTime = Date.now()
+        
+        try {
+          const {
+            data: { user: currentUser },
+            error,
+          } = await supabase.auth.getUser()
+          
+          // Si hay error, no hacer nada
+          if (error) {
+            return
+          }
+          
+          // Solo actualizar si el estado cambió significativamente
+          setUser((prevUser) => {
+            if (currentUser?.id !== prevUser?.id) {
+              if (mountedRef.current) {
+                if (currentUser) {
+                  fetchUserRole(currentUser.id).then((role) => {
+                    if (mountedRef.current) {
+                      setUserRole(role)
+                    }
+                  }).catch(() => {
+                    // Ignorar errores silenciosamente
+                  })
+                } else {
                   if (mountedRef.current) {
-                    setUserRole(role)
+                    setUserRole(null)
                   }
-                }).catch((error) => {
-                  console.debug("Error fetching role in interval:", error)
-                })
-              } else {
-                if (mountedRef.current) {
-                  setUserRole(null)
                 }
               }
+              return currentUser ?? null
             }
-            return currentUser ?? null
-          }
-          return prevUser
-        })
-      } catch (error) {
-        // Silenciar errores de verificación periódica para no llenar la consola
-        console.debug("Error en verificación periódica de auth:", error)
+            return prevUser
+          })
+        } catch (error) {
+          // Ignorar errores silenciosamente
+        }
+      }, CHECK_INTERVAL)
+    }
+    
+    // Iniciar intervalo solo si la página está visible
+    if (!document.hidden) {
+      startInterval()
+    }
+    
+    // Escuchar cambios de visibilidad de la página
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Pausar verificación cuando la página está en background
+        if (intervalId) {
+          clearInterval(intervalId)
+          intervalId = null
+        }
+      } else {
+        // Reanudar verificación cuando la página vuelve a estar visible
+        startInterval()
       }
-    }, 30000) // Cada 30 segundos
+    }
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange)
 
     return () => {
       mountedRef.current = false
       subscription?.unsubscribe()
-      clearInterval(intervalId)
+      clearTimeout(loadingTimeout)
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   }, []) // Sin dependencias para evitar re-crear el intervalo
 
