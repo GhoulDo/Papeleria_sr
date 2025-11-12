@@ -45,7 +45,10 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          {!loading && (
+          {loading ? (
+            // Mostrar un placeholder mientras carga para evitar que desaparezca el navbar
+            <div className="h-10 w-10 animate-pulse bg-[#D4C4B0] rounded-full" />
+          ) : (
             <>
               {user ? (
                 <>
