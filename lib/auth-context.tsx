@@ -41,67 +41,147 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mountedRef.current = true
     let retryCount = 0
     const maxRetries = 3
+    let authStateChanged = false // Flag para saber si onAuthStateChange ya se disparó
 
     const getUser = async (isRetry = false) => {
       try {
-        const {
-          data: { user },
-          error: getUserError,
-        } = await supabase.auth.getUser()
+        // Primero intentar obtener la sesión actual (más confiable que getUser)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error("[AuthContext] Error getting session:", sessionError)
+          // Si no hay sesión, establecer estados vacíos
+          if (sessionError.message?.includes("session") || sessionError.message?.includes("missing")) {
+            if (mountedRef.current && !authStateChanged) {
+              setUser(null)
+              setUserRole(null)
+              setLoading(false)
+            }
+            return
+          }
+        }
 
-        if (getUserError) {
-          console.error("Error getting user:", getUserError)
-          // Si es un error de red o token, intentar refrescar
-          if (getUserError.message?.includes("JWT") || getUserError.message?.includes("token")) {
-            if (retryCount < maxRetries && mountedRef.current) {
-              retryCount++
-              console.log(`Reintentando obtener usuario (intento ${retryCount}/${maxRetries})...`)
-              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
-              return getUser(true)
+        // Si hay sesión, usar el usuario de la sesión directamente
+        if (session?.user) {
+          if (mountedRef.current) {
+            setUser(session.user)
+            if (!authStateChanged) {
+              setLoading(false)
             }
           }
+          
+          // Obtener el rol en segundo plano
+          fetchUserRole(session.user.id)
+            .then((role) => {
+              if (mountedRef.current) {
+                setUserRole(role)
+              }
+            })
+            .catch((error) => {
+              console.error("[AuthContext] Error fetching role:", error)
+              if (mountedRef.current) {
+                setUserRole("customer")
+              }
+            })
+          return
         }
 
-        if (!mountedRef.current) return
+        // Si no hay sesión, intentar obtener el usuario directamente (puede fallar)
+        try {
+          const {
+            data: { user },
+            error: getUserError,
+          } = await supabase.auth.getUser()
 
-        setUser(user ?? null)
+          if (getUserError) {
+            // Si el error es "session missing", es normal cuando no hay sesión
+            if (getUserError.message?.includes("session") || getUserError.message?.includes("missing")) {
+              if (mountedRef.current && !authStateChanged) {
+                setUser(null)
+                setUserRole(null)
+                setLoading(false)
+              }
+              return
+            }
+            
+            console.error("[AuthContext] Error getting user:", getUserError)
+            // Si es un error de red o token, intentar refrescar
+            if (getUserError.message?.includes("JWT") || getUserError.message?.includes("token")) {
+              if (retryCount < maxRetries && mountedRef.current) {
+                retryCount++
+                console.log(`[AuthContext] Reintentando obtener usuario (intento ${retryCount}/${maxRetries})...`)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+                return getUser(true)
+              }
+            }
+          }
 
-        // Fetch user role from database
-        if (user) {
-          const role = await fetchUserRole(user.id)
-          if (mountedRef.current) {
-            setUserRole(role)
+          if (!mountedRef.current) return
+
+          // Establecer el usuario si se obtuvo correctamente
+          if (user) {
+            setUser(user)
+            if (mountedRef.current && !authStateChanged) {
+              setLoading(false)
+            }
+
+            // Fetch user role from database (no bloquea el loading)
+            fetchUserRole(user.id)
+              .then((role) => {
+                if (mountedRef.current) {
+                  setUserRole(role)
+                }
+              })
+              .catch((error) => {
+                console.error("[AuthContext] Error fetching role in getUser:", error)
+                if (mountedRef.current) {
+                  setUserRole("customer") // Default role
+                }
+              })
+          } else {
+            if (mountedRef.current && !authStateChanged) {
+              setUser(null)
+              setUserRole(null)
+              setLoading(false)
+            }
           }
-        } else {
-          if (mountedRef.current) {
-            setUserRole(null)
+        } catch (getUserException) {
+          // Si getUser() lanza una excepción (como "session missing"), manejarlo silenciosamente
+          if (getUserException instanceof Error && 
+              (getUserException.message?.includes("session") || getUserException.message?.includes("missing"))) {
+            if (mountedRef.current && !authStateChanged) {
+              setUser(null)
+              setUserRole(null)
+              setLoading(false)
+            }
+            return
           }
+          throw getUserException // Re-lanzar otros errores
         }
       } catch (error) {
-        console.error("Error fetching user:", error)
-        // En caso de error, no establecer loading a false inmediatamente
-        // para dar oportunidad de reintentar
+        console.error("[AuthContext] Error fetching user:", error)
+        // En caso de error, establecer loading a false para no bloquear la UI
+        if (mountedRef.current && !authStateChanged) {
+          setLoading(false)
+        }
+        
+        // Reintentar solo si no es un retry y no hemos excedido el límite
         if (!isRetry && retryCount < maxRetries && mountedRef.current) {
           retryCount++
-          console.log(`Reintentando después de error (intento ${retryCount}/${maxRetries})...`)
+          console.log(`[AuthContext] Reintentando después de error (intento ${retryCount}/${maxRetries})...`)
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
           return getUser(true)
-        }
-      } finally {
-        // Asegurar que loading siempre se establezca en false después de un tiempo máximo
-        if (mountedRef.current) {
-          setLoading(false)
         }
       }
     }
 
-    // Timeout de seguridad: si después de 3 segundos aún está cargando, forzar loading a false
+    // Timeout de seguridad: si después de 2 segundos aún está cargando, forzar loading a false
     const loadingTimeout = setTimeout(() => {
       if (mountedRef.current) {
         console.log("[AuthContext] Timeout de seguridad: forzando loading a false")
         setLoading(false)
       }
-    }, 3000)
+    }, 2000)
 
     getUser()
 
@@ -112,13 +192,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("[AuthContext] Auth state changed:", event, session?.user?.id)
       
+      // Marcar que el estado de auth cambió (esto previene que getUser() sobrescriba el loading)
+      authStateChanged = true
+      
+      // Actualizar el usuario inmediatamente
+      setUser(session?.user ?? null)
+      
       // Establecer loading en false inmediatamente cuando hay un cambio de estado
-      // Esto evita que se quede cargando
+      // Esto evita que se quede cargando, especialmente después del login
       if (mountedRef.current) {
         setLoading(false)
       }
-      
-      setUser(session?.user ?? null)
 
       if (session?.user) {
         // Obtener el rol de forma asíncrona pero no bloquear el estado de loading

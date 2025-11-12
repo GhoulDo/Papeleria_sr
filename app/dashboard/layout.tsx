@@ -17,12 +17,19 @@ export default function DashboardLayout({
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/auth/login")
-    }
+    // Dar un pequeño delay para permitir que el AuthContext se sincronice después del login
+    const checkAuth = setTimeout(() => {
+      if (!loading && !user) {
+        router.replace("/auth/login")
+      }
+    }, 100)
+
+    return () => clearTimeout(checkAuth)
   }, [loading, user, router])
 
-  if (loading) {
+  // Mostrar loading solo si realmente está cargando Y no hay usuario
+  // Si hay usuario pero loading es true, mostrar el contenido (puede ser una actualización)
+  if (loading && !user) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -33,7 +40,8 @@ export default function DashboardLayout({
     )
   }
 
-  if (!user) {
+  // Si no hay usuario después de cargar, redirigir (pero mostrar contenido mientras tanto)
+  if (!loading && !user) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />

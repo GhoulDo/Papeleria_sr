@@ -19,12 +19,19 @@ export default function AdminLayout({
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && (!user || userRole !== "admin")) {
-      router.replace("/dashboard")
-    }
+    // Dar un pequeño delay para permitir que el AuthContext se sincronice después del login
+    const checkAuth = setTimeout(() => {
+      if (!loading && (!user || userRole !== "admin")) {
+        router.replace("/dashboard")
+      }
+    }, 100)
+
+    return () => clearTimeout(checkAuth)
   }, [loading, user, userRole, router])
 
-  if (loading) {
+  // Mostrar loading solo si realmente está cargando Y no hay usuario
+  // Si hay usuario pero el rol aún no está cargado, esperar un poco más
+  if (loading && !user) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -35,7 +42,20 @@ export default function AdminLayout({
     )
   }
 
-  if (!user || userRole !== "admin") {
+  // Si hay usuario pero el rol aún no está disponible, esperar un poco más
+  if (user && userRole === null && loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex justify-center items-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
+  // Si no es admin después de cargar, redirigir
+  if (!loading && (!user || userRole !== "admin")) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />

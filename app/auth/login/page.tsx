@@ -28,7 +28,7 @@ export default function LoginPage() {
 
     try {
       const {
-        data: { user },
+        data: { user, session },
         error: loginError,
       } = await supabase.auth.signInWithPassword({
         email,
@@ -38,20 +38,39 @@ export default function LoginPage() {
       if (loginError) throw loginError
       if (!user) throw new Error("No se pudo iniciar sesión. Intenta nuevamente.")
 
+      // Obtener el rol del usuario
       const { data: profile, error: roleError } = await supabase.from("users").select("role").eq("id", user.id).single()
-      if (roleError) throw roleError
-
-      if (profile?.role === "admin") {
-        router.replace("/admin")
-      } else {
-        router.replace("/dashboard")
+      if (roleError) {
+        console.error("Error obteniendo rol:", roleError)
+        // Continuar con rol por defecto si falla
       }
+
+      // Esperar un momento para que el AuthContext se actualice con la nueva sesión
+      // Esto asegura que el estado de autenticación esté sincronizado antes de redirigir
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Verificar que la sesión esté establecida
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession) {
+        throw new Error("No se pudo establecer la sesión. Intenta nuevamente.")
+      }
+
+      // Redirigir según el rol
+      const targetRoute = profile?.role === "admin" ? "/admin" : "/dashboard"
+      
+      // Usar router.push en lugar de replace para mejor manejo de navegación
+      router.push(targetRoute)
+      
+      // Forzar un refresh para asegurar que el AuthContext se actualice
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión"
       setError(message)
-    } finally {
       setLoading(false)
     }
+    // No usar finally aquí porque si el login es exitoso, la página se redirige
   }
 
   return (
