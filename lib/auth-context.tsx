@@ -95,12 +95,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Timeout de seguridad: si después de 5 segundos aún está cargando, forzar loading a false
+    // Timeout de seguridad: si después de 3 segundos aún está cargando, forzar loading a false
     const loadingTimeout = setTimeout(() => {
       if (mountedRef.current) {
+        console.log("[AuthContext] Timeout de seguridad: forzando loading a false")
         setLoading(false)
       }
-    }, 5000)
+    }, 3000)
 
     getUser()
 
@@ -111,22 +112,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("[AuthContext] Auth state changed:", event, session?.user?.id)
       
+      // Establecer loading en false inmediatamente cuando hay un cambio de estado
+      // Esto evita que se quede cargando
+      if (mountedRef.current) {
+        setLoading(false)
+      }
+      
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        const role = await fetchUserRole(session.user.id)
-        if (mountedRef.current) {
-          setUserRole(role)
-        }
+        // Obtener el rol de forma asíncrona pero no bloquear el estado de loading
+        fetchUserRole(session.user.id)
+          .then((role) => {
+            if (mountedRef.current) {
+              setUserRole(role)
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching user role in onAuthStateChange:", error)
+            // Establecer rol por defecto si falla
+            if (mountedRef.current) {
+              setUserRole("customer")
+            }
+          })
       } else {
         if (mountedRef.current) {
           setUserRole(null)
         }
-      }
-      
-      // Si acabamos de iniciar sesión, asegurarnos de que loading sea false
-      if (mountedRef.current) {
-        setLoading(false)
       }
     })
 
