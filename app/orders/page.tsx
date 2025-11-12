@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useRequireAuth } from "@/hooks/use-require-auth"
 import { createClient } from "@/lib/supabase/client"
+import { Navbar } from "@/components/navbar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +28,7 @@ const statusConfig = {
 }
 
 export default function OrdersPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useRequireAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>("all")
@@ -62,8 +63,25 @@ export default function OrdersPage() {
 
   const statusOptions = ["all", "pending", "processing", "shipped", "delivered"]
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex justify-center items-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Mis Órdenes</h1>
@@ -132,6 +150,7 @@ export default function OrdersPage() {
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   )

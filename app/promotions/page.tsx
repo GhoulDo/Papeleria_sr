@@ -37,60 +37,94 @@ export default async function PromotionsPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 py-12 md:py-16">
+      <section className="mx-auto max-w-6xl px-4 py-12 md:py-16">
         {promotions.length === 0 ? (
-          <Card className="border-dashed border-[#D4C4B0] bg-[#F5F1ED]/70 py-12 text-center">
-            <CardContent className="space-y-3">
-              <PercentCircle className="mx-auto h-10 w-10 text-[#8B6F47]" />
-              <h2 className="text-2xl font-semibold text-[#3D2817]">No hay promociones activas</h2>
-              <p className="text-sm text-[#6B5D52]">Vuelve pronto para obtener descuentos exclusivos.</p>
+          <Card className="border-dashed border-[#D4C4B0] bg-gradient-to-br from-[#F5F1ED] to-white py-16 text-center shadow-lg">
+            <CardContent className="space-y-4">
+              <div className="mx-auto w-20 h-20 rounded-full bg-[#F5F1ED] flex items-center justify-center mb-4">
+                <PercentCircle className="h-10 w-10 text-[#8B6F47]" />
+              </div>
+              <h2 className="text-3xl font-bold text-[#3D2817]">No hay promociones activas</h2>
+              <p className="text-lg text-[#6B5D52] max-w-md mx-auto">
+                Vuelve pronto para obtener descuentos exclusivos y ofertas especiales.
+              </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            {promotions.map((promo) => (
-              <Card key={promo.id} className="border-[#E1D5C8] bg-white/90 backdrop-blur">
-                <CardHeader className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-2xl font-semibold text-[#3D2817]">{promo.name}</CardTitle>
-                    <Badge className="bg-[#5C4033] text-white font-mono text-xs">Código: {promo.code}</Badge>
-                  </div>
-                  <p className="text-sm text-[#6B5D52]">
-                    {promo.description || "Aprovecha este descuento exclusivo en nuestra tienda online."}
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="rounded-2xl border border-[#E1D5C8] bg-[#F5F1ED]/60 px-4 py-3 text-sm text-[#5C4033]">
-                    Descuento de{" "}
-                    <span className="font-semibold">
-                      {promo.discount_type === "percentage"
-                        ? `${promo.discount_value}%`
-                        : `$${Number(promo.discount_value).toFixed(2)}`}
-                    </span>{" "}
-                    {promo.min_purchase_amount
-                      ? `en compras desde $${Number(promo.min_purchase_amount).toFixed(2)}`
-                      : "en cualquier compra"}{" "}
-                    hasta el{" "}
-                    {new Date(promo.end_date).toLocaleDateString("es-CO", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                    .
-                  </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {promotions.map((promo) => {
+              const discountValue = promo.discount_type === "percentage"
+                ? `${promo.discount_value}%`
+                : `$${Number(promo.discount_value).toLocaleString("es-CO")}`
+              
+              return (
+                <Card 
+                  key={promo.id} 
+                  className="group border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] backdrop-blur hover:border-[#5C4033] hover:shadow-2xl transition-all duration-300 overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#5C4033]/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CardHeader className="space-y-3 relative z-10">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-xl font-bold text-[#3D2817] leading-tight flex-1">
+                        {promo.name}
+                      </CardTitle>
+                      <Badge className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white font-mono text-xs px-3 py-1 shadow-md">
+                        {promo.code}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-[#6B5D52] leading-relaxed line-clamp-2">
+                      {promo.description || "Aprovecha este descuento exclusivo en nuestra tienda online."}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4 relative z-10">
+                    <div className="rounded-2xl border-2 border-[#E1D5C8] bg-gradient-to-br from-[#F5F1ED] to-white px-5 py-4 text-center shadow-inner">
+                      <div className="text-xs text-[#8B6F47] mb-1 uppercase tracking-wider">Descuento</div>
+                      <div className="text-3xl font-bold text-[#5C4033] mb-2">
+                        {discountValue}
+                      </div>
+                      {promo.min_purchase_amount && (
+                        <div className="text-xs text-[#6B5D52] pt-2 border-t border-[#E1D5C8]">
+                          Compra mínima: ${Number(promo.min_purchase_amount).toLocaleString("es-CO")}
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex items-center gap-2 text-xs text-[#8B6F47]">
-                    <CalendarDays className="h-4 w-4" />
-                    Vigente desde{" "}
-                    {new Date(promo.start_date).toLocaleDateString("es-CO", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-[#8B6F47]">
+                        <CalendarDays className="h-4 w-4 flex-shrink-0" />
+                        <span className="flex-1">
+                          Vigente desde{" "}
+                          {new Date(promo.start_date).toLocaleDateString("es-CO", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-[#8B6F47]">
+                        <CalendarDays className="h-4 w-4 flex-shrink-0" />
+                        <span className="flex-1">
+                          Válido hasta{" "}
+                          {new Date(promo.end_date).toLocaleDateString("es-CO", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#E1D5C8]">
+                      <div className="text-center">
+                        <p className="text-xs font-semibold text-[#5C4033] uppercase tracking-wider">
+                          Usa el código en el checkout
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </section>

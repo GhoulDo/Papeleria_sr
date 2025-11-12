@@ -19,6 +19,9 @@ import {
   CircleDashed,
   Percent,
   CalendarClock,
+  Hash,
+  Users,
+  ShoppingCart,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -167,36 +170,48 @@ export default function PromotionsAdminPage() {
   }
 
   return (
-    <div className="space-y-8 px-4 py-12">
+    <div className="space-y-8 px-4 py-12 bg-gradient-to-b from-[#F7F1EB] to-white min-h-screen">
       <header className="mx-auto flex w-full max-w-6xl flex-col gap-6 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <Badge className="bg-[#5C4033] text-white uppercase tracking-[0.3em]">Promociones</Badge>
-          <h1 className="text-4xl font-bold text-[#3D2817]">Gestión de descuentos y cupones</h1>
-          <p className="max-w-2xl text-sm text-[#6B5D52]">
-            Controla códigos, vigencias y límites para campañas comerciales. Activa o pausa promociones en cualquier
-            momento.
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Badge className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white uppercase tracking-[0.3em] px-4 py-1.5 shadow-md">
+              <Percent className="mr-2 h-3 w-3" />
+              Promociones
+            </Badge>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#3D2817] leading-tight">
+            Gestión de Descuentos y Cupones
+          </h1>
+          <p className="max-w-2xl text-base text-[#6B5D52] leading-relaxed">
+            Controla códigos promocionales, vigencias y límites para tus campañas comerciales. 
+            Activa o pausa promociones en cualquier momento desde aquí.
           </p>
         </div>
-        <Button asChild className="bg-[#5C4033] hover:bg-[#3D2817] text-white">
+        <Button 
+          asChild 
+          className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] hover:from-[#3D2817] hover:to-[#2A1C10] text-white shadow-lg hover:shadow-xl transition-all h-12 px-6"
+        >
           <Link href="/admin/promotions/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva promoción
+            <Plus className="mr-2 h-5 w-5" />
+            Nueva Promoción
           </Link>
         </Button>
       </header>
 
-      <Card className="mx-auto w-full max-w-6xl border-[#E1D5C8] bg-white/90 backdrop-blur">
+      <Card className="mx-auto w-full max-w-6xl border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl">
         <CardContent className="space-y-4 p-6">
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por nombre o código..."
-              className="h-11 border-[#D4C4B0] bg-white/70"
-            />
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="relative">
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="🔍 Buscar por nombre o código..."
+                className="h-12 border-2 border-[#D4C4B0] bg-white/80 focus:border-[#5C4033] focus:ring-2 focus:ring-[#5C4033]/20 text-[#3D2817] placeholder:text-[#8B6F47]"
+              />
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1">
               <Select value={statusFilter} onValueChange={(value: StatusFilter) => setStatusFilter(value)}>
-                <SelectTrigger className="h-11 border-[#D4C4B0] bg-white/70 text-[#5C4033]">
+                <SelectTrigger className="h-12 border-2 border-[#D4C4B0] bg-white/80 text-[#5C4033] focus:border-[#5C4033]">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -207,7 +222,7 @@ export default function PromotionsAdminPage() {
               </Select>
 
               <Select value={typeFilter} onValueChange={(value: TypeFilter) => setTypeFilter(value)}>
-                <SelectTrigger className="h-11 border-[#D4C4B0] bg-white/70 text-[#5C4033]">
+                <SelectTrigger className="h-12 border-2 border-[#D4C4B0] bg-white/80 text-[#5C4033] focus:border-[#5C4033]">
                   <SelectValue placeholder="Tipo de descuento" />
                 </SelectTrigger>
                 <SelectContent>
@@ -219,30 +234,55 @@ export default function PromotionsAdminPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#E1D5C8] bg-[#F5F1ED]/60 px-4 py-3 text-sm text-[#6B5D52]">
-            {filteredCount === 0 ? (
-              <span>No se encontraron promociones con los filtros seleccionados.</span>
-            ) : (
-              <span>
-                Mostrando <strong className="text-[#3D2817]">{filteredCount}</strong>{" "}
-                {filteredCount === 1 ? "promoción" : "promociones"} en la tabla.
-              </span>
-            )}
+          <div className="rounded-2xl border-2 border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white px-5 py-4 text-sm text-[#6B5D52] shadow-inner">
+            <div className="flex items-center justify-between">
+              {filteredCount === 0 ? (
+                <span className="flex items-center gap-2">
+                  <span>📭</span>
+                  <span>No se encontraron promociones con los filtros seleccionados.</span>
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <span>📊</span>
+                  <span>
+                    Mostrando <strong className="text-[#3D2817] font-semibold">{filteredCount}</strong>{" "}
+                    {filteredCount === 1 ? "promoción" : "promociones"} en la lista.
+                  </span>
+                </span>
+              )}
+              {refreshing && (
+                <Loader2 className="h-4 w-4 animate-spin text-[#5C4033]" />
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {filteredCount === 0 ? (
-        <Card className="mx-auto w-full max-w-6xl border-dashed border-[#D4C4B0] bg-[#F5F1ED]/60 py-16 text-center">
-          <CardContent className="space-y-3">
-            <Percent className="mx-auto h-10 w-10 text-[#8B6F47]" />
-            <h3 className="text-2xl font-semibold text-[#3D2817]">Sin promociones activas</h3>
-            <p className="text-sm text-[#6B5D52]">Crea una nueva promoción para impulsar tus ventas.</p>
+        <Card className="mx-auto w-full max-w-6xl border-2 border-dashed border-[#D4C4B0] bg-gradient-to-br from-[#F5F1ED] to-white py-20 text-center shadow-lg">
+          <CardContent className="space-y-4">
+            <div className="mx-auto w-20 h-20 rounded-full bg-[#F5F1ED] flex items-center justify-center mb-4">
+              <Percent className="h-10 w-10 text-[#8B6F47]" />
+            </div>
+            <h3 className="text-3xl font-bold text-[#3D2817]">Sin promociones encontradas</h3>
+            <p className="text-base text-[#6B5D52] max-w-md mx-auto">
+              {search || statusFilter !== "all" || typeFilter !== "all"
+                ? "Intenta ajustar los filtros de búsqueda o crea una nueva promoción."
+                : "Crea tu primera promoción para comenzar a impulsar tus ventas con descuentos atractivos."}
+            </p>
+            {(!search && statusFilter === "all" && typeFilter === "all") && (
+              <Button asChild className="mt-4 bg-[#5C4033] hover:bg-[#3D2817] text-white">
+                <Link href="/admin/promotions/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Crear Primera Promoción
+                </Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
-        <ScrollArea className="mx-auto w-full max-w-6xl rounded-3xl border border-[#E1D5C8] bg-white/80 backdrop-blur">
-          <div className="divide-y divide-[#F1E6D8]">
+        <ScrollArea className="mx-auto w-full max-w-6xl rounded-3xl border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl">
+          <div className="divide-y divide-[#E1D5C8]">
             {promotions.map((promo) => {
               const isProcessing = processingId === promo.id
               const isExpired = new Date(promo.end_date) < new Date()
@@ -252,62 +292,80 @@ export default function PromotionsAdminPage() {
                   : `$${Number(promo.discount_value).toLocaleString("es-CO")}`
 
               return (
-                <div key={promo.id} className="grid gap-4 p-5 transition hover:bg-[#FBF7F2]">
+                <div 
+                  key={promo.id} 
+                  className="group grid gap-4 p-6 transition-all hover:bg-gradient-to-r hover:from-[#FBF8F4] hover:to-white border-l-4 border-l-transparent hover:border-l-[#5C4033]"
+                >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
+                    <div className="space-y-3 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-lg font-semibold text-[#3D2817]">{promo.name}</h3>
+                        <h3 className="text-xl font-bold text-[#3D2817]">{promo.name}</h3>
                         <Badge
                           className={cn(
-                            "rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-                            promo.is_active ? "bg-[#5C4033] text-white" : "bg-[#E8DFD5] text-[#5C4033]",
+                            "rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wide shadow-sm",
+                            promo.is_active 
+                              ? "bg-gradient-to-r from-green-500 to-green-600 text-white" 
+                              : "bg-[#E8DFD5] text-[#5C4033]",
                           )}
                         >
-                          {promo.is_active ? "Activa" : "Inactiva"}
+                          {promo.is_active ? "✓ Activa" : "○ Inactiva"}
                         </Badge>
-                        {isExpired && <Badge variant="secondary">Expirada</Badge>}
+                        {isExpired && (
+                          <Badge className="bg-red-100 text-red-800 border border-red-200">
+                            ⏰ Expirada
+                          </Badge>
+                        )}
                       </div>
-                      <p className="text-sm text-[#6B5D52]">{promo.description || "Sin descripción personalizada."}</p>
-                      <div className="flex flex-wrap gap-3 text-xs text-[#8B6F47]">
-                        <span className="rounded-full border border-[#D4C4B0] bg-[#F5F1ED]/70 px-3 py-1 font-mono">
-                          Código: {promo.code}
+                      <p className="text-sm text-[#6B5D52] leading-relaxed">
+                        {promo.description || "Sin descripción personalizada."}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#D4C4B0] bg-gradient-to-r from-[#F5F1ED] to-white px-4 py-2 text-xs font-mono font-semibold text-[#5C4033] shadow-sm">
+                          <Hash className="h-3 w-3" />
+                          {promo.code}
                         </span>
-                        <span className="rounded-full border border-[#D4C4B0] bg-[#F5F1ED]/70 px-3 py-1">
-                          Descuento: {discountLabel}
+                        <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#D4C4B0] bg-gradient-to-r from-[#F5F1ED] to-white px-4 py-2 text-xs font-semibold text-[#5C4033] shadow-sm">
+                          <Percent className="h-3 w-3" />
+                          {discountLabel}
                         </span>
                         {promo.min_purchase_amount && (
-                          <span className="rounded-full border border-[#D4C4B0] bg-[#F5F1ED]/70 px-3 py-1">
-                            Compra mínima: ${Number(promo.min_purchase_amount).toLocaleString("es-CO")}
+                          <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#D4C4B0] bg-gradient-to-r from-[#F5F1ED] to-white px-4 py-2 text-xs text-[#6B5D52] shadow-sm">
+                            <ShoppingCart className="h-3 w-3" />
+                            Mín: ${Number(promo.min_purchase_amount).toLocaleString("es-CO")}
                           </span>
                         )}
-                        <span className="rounded-full border border-[#D4C4B0] bg-[#F5F1ED]/70 px-3 py-1">
-                          Uso: {promo.usage_count ?? 0}
-                          {promo.usage_limit ? ` / ${promo.usage_limit}` : ""}
+                        <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#D4C4B0] bg-gradient-to-r from-[#F5F1ED] to-white px-4 py-2 text-xs text-[#6B5D52] shadow-sm">
+                          <Users className="h-3 w-3" />
+                          {promo.usage_count ?? 0}
+                          {promo.usage_limit ? ` / ${promo.usage_limit}` : " usos"}
                         </span>
                       </div>
-                      <p className="flex items-center gap-2 text-xs text-[#6B5D52]">
-                        <CalendarClock className="h-4 w-4" />
-                        Vigencia:{" "}
-                        {new Date(promo.start_date).toLocaleDateString("es-CO", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}{" "}
-                        -{" "}
-                        {new Date(promo.end_date).toLocaleDateString("es-CO", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-[#6B5D52] pt-2">
+                        <CalendarClock className="h-4 w-4 flex-shrink-0" />
+                        <span>
+                          <strong>Vigencia:</strong>{" "}
+                          {new Date(promo.start_date).toLocaleDateString("es-CO", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}{" "}
+                          -{" "}
+                          {new Date(promo.end_date).toLocaleDateString("es-CO", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end">
                       <Button
                         variant={promo.is_active ? "outline" : "default"}
+                        size="sm"
                         className={cn(
-                          "border-[#D4C4B0] bg-white text-[#5C4033] hover:bg-[#F5F1ED]",
-                          !promo.is_active && "bg-[#5C4033] text-white hover:bg-[#3D2817]",
+                          "border-2 border-[#D4C4B0] bg-white text-[#5C4033] hover:bg-[#F5F1ED] transition-all",
+                          !promo.is_active && "bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white hover:from-[#3D2817] hover:to-[#2A1C10] border-0 shadow-md",
                         )}
                         onClick={() => handleToggleActive(promo)}
                         disabled={isProcessing}
@@ -322,7 +380,12 @@ export default function PromotionsAdminPage() {
                         {promo.is_active ? "Pausar" : "Activar"}
                       </Button>
 
-                      <Button asChild variant="outline" className="border-[#D4C4B0] text-[#5C4033]">
+                      <Button 
+                        asChild 
+                        variant="outline" 
+                        size="sm"
+                        className="border-2 border-[#D4C4B0] text-[#5C4033] hover:bg-[#F5F1ED] hover:border-[#5C4033] transition-all"
+                      >
                         <Link href={`/admin/promotions/${promo.id}`}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Editar
@@ -331,11 +394,16 @@ export default function PromotionsAdminPage() {
 
                       <Button
                         variant="destructive"
-                        className="bg-[#C85A54] hover:bg-[#b24d48]"
+                        size="sm"
+                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-md"
                         onClick={() => handleDelete(promo)}
                         disabled={isProcessing}
                       >
-                        {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        {isProcessing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
                         Eliminar
                       </Button>
                     </div>

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { CartSummary } from "@/components/cart-summary"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { validateStock, updateStock } from "@/lib/utils/stock-validator"
 
 interface CartItem {
   id: string
@@ -127,6 +128,20 @@ export default function CheckoutPage() {
     setProcessing(true)
 
     try {
+      // Validar stock antes de crear la orden
+      for (const item of items) {
+        const hasStock = await validateStock(item.product_id, item.quantity)
+        if (!hasStock) {
+          toast({
+            title: "Stock insuficiente",
+            description: `El producto "${item.product.name}" no tiene suficiente stock disponible`,
+            variant: "destructive",
+          })
+          setProcessing(false)
+          return
+        }
+      }
+
       const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
       const tax = subtotal * 0.16
       const shipping = subtotal > 100 ? 0 : 10
@@ -170,6 +185,68 @@ export default function CheckoutPage() {
       const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
 
       if (itemsError) throw itemsError
+
+      // Reducir stock de los productos - CRÍTICO: debe hacerse después de crear la orden pero antes de limpiar el carrito
+      const stockUpdateErrors: string[] = []
+      
+      for (const item of items) {
+        console.log(`[STOCK] Reduciendo stock para producto ${item.product.name} (ID: ${item.product_id}), cantidad: ${item.quantity}`)
+        
+        // Obtener stock antes de reducir
+        const { data: beforeData } = await supabase
+          .from("products")
+          .select("stock_quantity, name")
+          .eq("id", item.product_id)
+          .single()
+        
+        const stockBefore = beforeData?.stock_quantity ?? 0
+        console.log(`[STOCK] Stock ANTES de reducir para ${item.product.name}: ${stockBefore}`)
+        
+        const stockUpdated = await updateStock(item.product_id, item.quantity, "decrease")
+        
+        if (!stockUpdated) {
+          const errorMsg = `Error al reducir stock del producto "${item.product.name}" (ID: ${item.product_id})`
+          console.error(`[STOCK ERROR] ${errorMsg}`)
+          stockUpdateErrors.push(errorMsg)
+        } else {
+          // Verificar que el stock se redujo correctamente
+          const { data: afterData } = await supabase
+            .from("products")
+            .select("stock_quantity")
+            .eq("id", item.product_id)
+            .single()
+          
+          const stockAfter = afterData?.stock_quantity ?? 0
+          const expectedStock = stockBefore - item.quantity
+          
+          console.log(`[STOCK] Stock DESPUÉS de reducir para ${item.product.name}: ${stockAfter}, Esperado: ${expectedStock}`)
+          
+          if (stockAfter !== expectedStock) {
+            const errorMsg = `El stock no se redujo correctamente para "${item.product.name}". Stock antes: ${stockBefore}, después: ${stockAfter}, esperado: ${expectedStock}`
+            console.error(`[STOCK ERROR] ${errorMsg}`)
+            stockUpdateErrors.push(errorMsg)
+          } else {
+            console.log(`[STOCK] ✅ Stock reducido correctamente para ${item.product.name}: ${stockBefore} → ${stockAfter}`)
+          }
+        }
+      }
+
+      // Si hubo errores al reducir stock, revertir la orden y mostrar error
+      if (stockUpdateErrors.length > 0) {
+        console.error(`[STOCK] Errores al reducir stock. Revertiendo orden ${orderData.id}`)
+        
+        // Intentar revertir la orden eliminándola
+        await supabase.from("order_items").delete().eq("order_id", orderData.id)
+        await supabase.from("orders").delete().eq("id", orderData.id)
+        
+        toast({
+          title: "Error al procesar la orden",
+          description: `No se pudo reducir el stock de algunos productos. La orden ha sido cancelada. Errores: ${stockUpdateErrors.join(", ")}`,
+          variant: "destructive",
+        })
+        setProcessing(false)
+        return
+      }
 
       // Update user profile
       await supabase

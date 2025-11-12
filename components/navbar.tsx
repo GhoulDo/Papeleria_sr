@@ -15,8 +15,19 @@ export function Navbar() {
   const supabase = createClient()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/")
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      // Esperar un momento para que el estado se actualice
+      await new Promise(resolve => setTimeout(resolve, 150))
+      
+      // Redirigir y refrescar
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error)
+    }
   }
 
   return (

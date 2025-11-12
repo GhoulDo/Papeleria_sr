@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useRequireAuth } from "@/hooks/use-require-auth"
 import { createClient } from "@/lib/supabase/client"
+import { Navbar } from "@/components/navbar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,7 +25,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useRequireAuth()
   const { toast } = useToast()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -115,16 +116,25 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex justify-center items-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
       </div>
     )
   }
 
+  if (!user) {
+    return null
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Mi Perfil</h1>
@@ -195,6 +205,7 @@ export default function ProfilePage() {
             </>
           )}
         </Button>
+      </div>
       </div>
     </div>
   )

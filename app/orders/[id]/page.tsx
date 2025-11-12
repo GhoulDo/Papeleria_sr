@@ -79,10 +79,10 @@ export default function OrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
         <Navbar />
         <div className="flex justify-center items-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#5C4033]" />
         </div>
       </div>
     )
@@ -90,10 +90,17 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-          <h1 className="text-2xl font-bold">Orden no encontrada</h1>
+          <div className="space-y-4">
+            <div className="text-6xl mb-4">📋</div>
+            <h1 className="text-3xl font-bold text-[#3D2817]">Orden no encontrada</h1>
+            <p className="text-[#6B5D52]">La orden que buscas no existe o no tienes permiso para verla.</p>
+            <Button asChild className="mt-6 bg-[#5C4033] hover:bg-[#3D2817] text-white">
+              <Link href="/orders">Ver mis órdenes</Link>
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -103,37 +110,54 @@ export default function OrderDetailPage() {
   const StatusIcon = status.icon
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
       <Navbar />
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-4xl font-bold">Orden {order.order_number}</h1>
-            <Badge className={status.color}>
-              <StatusIcon className="h-3 w-3 mr-1" />
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        {/* Header */}
+        <div className="mb-8 pb-6 border-b border-[#E1D5C8]">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-[#3D2817] mb-2">
+                Orden {order.order_number}
+              </h1>
+              <p className="text-[#6B5D52]">
+                Creada el {new Date(order.created_at).toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+            <Badge className={`${status.color} px-4 py-2 text-sm font-semibold`}>
+              <StatusIcon className="h-4 w-4 mr-2" />
               {status.label}
             </Badge>
           </div>
-          <p className="text-muted-foreground">Creada el {new Date(order.created_at).toLocaleDateString("es-ES")}</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Order Details */}
-          <div className="md:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Items */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Productos</CardTitle>
+            <Card className="border-[#E1D5C8] bg-white/90 shadow-sm">
+              <CardHeader className="border-b border-[#E1D5C8]">
+                <CardTitle className="text-[#3D2817]">Productos</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="space-y-4">
                   {order.order_items.map((item) => (
-                    <div key={item.id} className="flex justify-between py-2 border-b border-border last:border-b-0">
-                      <span>
-                        {item.product.name} x{item.quantity}
+                    <div 
+                      key={item.id} 
+                      className="flex justify-between items-center py-4 border-b border-[#E1D5C8]/50 last:border-b-0"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-[#3D2817]">{item.product.name}</p>
+                        <p className="text-sm text-[#6B5D52]">Cantidad: {item.quantity}</p>
+                      </div>
+                      <span className="font-semibold text-[#5C4033] text-lg">
+                        ${(item.unit_price * item.quantity).toFixed(2)}
                       </span>
-                      <span className="font-semibold">${(item.unit_price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -141,48 +165,48 @@ export default function OrderDetailPage() {
             </Card>
 
             {/* Shipping Address */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Dirección de Envío</CardTitle>
+            <Card className="border-[#E1D5C8] bg-white/90 shadow-sm">
+              <CardHeader className="border-b border-[#E1D5C8]">
+                <CardTitle className="text-[#3D2817]">Dirección de Envío</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-1 text-sm text-muted-foreground">
-                <div>{order.shipping_address}</div>
-                <div>{order.shipping_city}</div>
-                <div>
-                  Total: <span className="font-semibold text-primary">${order.total_amount.toFixed(2)}</span>
-                </div>
+              <CardContent className="pt-6 space-y-2">
+                <div className="text-[#3D2817] font-medium">{order.shipping_address}</div>
+                <div className="text-[#6B5D52]">{order.shipping_city}</div>
               </CardContent>
             </Card>
           </div>
 
           {/* Summary */}
           <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen</CardTitle>
+            <Card className="border-[#E1D5C8] bg-white/90 shadow-lg sticky top-4">
+              <CardHeader className="border-b border-[#E1D5C8]">
+                <CardTitle className="text-[#3D2817]">Resumen</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 border-b border-border pb-4">
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-3 border-b border-[#E1D5C8] pb-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>${order.subtotal.toFixed(2)}</span>
+                    <span className="text-[#6B5D52]">Subtotal</span>
+                    <span className="text-[#3D2817] font-medium">${order.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Impuestos</span>
-                    <span>${order.tax_amount.toFixed(2)}</span>
+                    <span className="text-[#6B5D52]">Impuestos</span>
+                    <span className="text-[#3D2817] font-medium">${order.tax_amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Envío</span>
-                    <span>${order.shipping_cost.toFixed(2)}</span>
+                    <span className="text-[#6B5D52]">Envío</span>
+                    <span className="text-[#3D2817] font-medium">${order.shipping_cost.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-primary">${order.total_amount.toFixed(2)}</span>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-lg font-semibold text-[#3D2817]">Total</span>
+                  <span className="text-2xl font-bold text-[#5C4033]">${order.total_amount.toFixed(2)}</span>
                 </div>
 
-                <Button asChild className="w-full">
+                <Button 
+                  asChild 
+                  className="w-full mt-6 bg-[#5C4033] hover:bg-[#3D2817] text-white"
+                >
                   <Link href="/dashboard">Volver al Dashboard</Link>
                 </Button>
               </CardContent>

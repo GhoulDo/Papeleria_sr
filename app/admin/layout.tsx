@@ -2,9 +2,10 @@
 
 import type React from "react"
 
+import { useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { Navbar } from "@/components/navbar"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,13 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const { user, userRole, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && (!user || userRole !== "admin")) {
+      router.replace("/dashboard")
+    }
+  }, [loading, user, userRole, router])
 
   if (loading) {
     return (
@@ -28,7 +36,14 @@ export default function AdminLayout({
   }
 
   if (!user || userRole !== "admin") {
-    redirect("/dashboard")
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex justify-center items-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    )
   }
 
   return (
