@@ -297,7 +297,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-4xl font-bold text-[#3D2817] mb-1 bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
                     {stats.deliveredOrders}
-                  </p>
+              </p>
                   <p className="text-xs text-[#8B6F47]">Compras completadas</p>
                 </div>
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">

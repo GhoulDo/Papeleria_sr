@@ -81,7 +81,7 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Mis Órdenes</h1>

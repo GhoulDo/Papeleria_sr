@@ -46,4 +46,4 @@ insert into public.promotions (
   50.00,
   'BIENVENIDA15',
   100
-) on conflict (code) do nothing;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+) on conflict (code) do nothing;

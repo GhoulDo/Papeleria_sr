@@ -118,8 +118,8 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-bold text-[#3D2817]">Producto no encontrado</h1>
             <p className="text-[#6B5D52]">El producto que buscas no existe o ha sido eliminado.</p>
             <Button asChild className="mt-6 bg-[#5C4033] hover:bg-[#3D2817] text-white">
-              <a href="/products">Volver al catálogo</a>
-            </Button>
+            <a href="/products">Volver al catálogo</a>
+          </Button>
           </div>
         </div>
       </div>
@@ -158,17 +158,17 @@ export default function ProductDetailPage() {
                   {product.name}
                 </h1>
                 <div className="flex items-center gap-3">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
                           i < Math.round(product.rating) 
                             ? "fill-[#F59E0B] text-[#F59E0B]" 
                             : "text-[#D4C4B0]"
-                        }`}
-                      />
-                    ))}
+                      }`}
+                    />
+                  ))}
                   </div>
                   <span className="text-sm text-[#6B5D52]">
                     ({product.reviews_count} {product.reviews_count === 1 ? "reseña" : "reseñas"})
@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
               <div>
                 <h2 className="text-lg font-semibold text-[#3D2817] mb-2">Descripción</h2>
                 <p className="text-[#6B5D52] leading-relaxed">{product.description}</p>
-              </div>
+            </div>
               {product.detailed_description && (
                 <div className="rounded-2xl border border-[#D4C4B0] bg-white/80 p-5 shadow-sm">
                   <h3 className="text-sm font-semibold text-[#5C4033] mb-2">Detalles adicionales</h3>

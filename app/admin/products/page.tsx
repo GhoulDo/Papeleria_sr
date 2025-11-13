@@ -234,7 +234,7 @@ export default function ProductsAdminPage() {
             Administra el catálogo, controla el estado de publicación, destaca artículos clave y revisa existencias de
             forma centralizada.
           </p>
-        </div>
+          </div>
         <div className="flex flex-wrap gap-3">
           <Button
             variant="outline"
@@ -258,28 +258,28 @@ export default function ProductsAdminPage() {
         <CardContent className="space-y-5 p-6">
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             <div className="relative md:col-span-2">
-              <Input
-                value={search}
+          <Input
+            value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Buscar por nombre, slug o SKU..."
                 className="h-11 border-[#D4C4B0] bg-white/70 pr-10"
-              />
+          />
               <Filter className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8B6F47]" />
             </div>
 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="h-11 w-full border-[#D4C4B0] bg-white/70 text-[#5C4033]">
                 <SelectValue placeholder="Todas las categorías" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
             <Select value={statusFilter} onValueChange={(value: StatusFilter) => setStatusFilter(value)}>
               <SelectTrigger className="h-11 w-full border-[#D4C4B0] bg-white/70 text-[#5C4033]">
@@ -302,7 +302,7 @@ export default function ProductsAdminPage() {
                 <SelectItem value="regular">No destacados</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+        </div>
 
           <div className="rounded-2xl border border-[#E1D5C8] bg-[#F5F1ED]/60 px-4 py-3 text-sm text-[#6B5D52]">
             <div className="flex flex-wrap items-center gap-2">
@@ -326,9 +326,9 @@ export default function ProductsAdminPage() {
             <Sparkles className="mx-auto h-10 w-10 text-[#8B6F47]" />
             <h3 className="text-2xl font-semibold text-[#3D2817]">No hay productos disponibles</h3>
             <p className="text-sm text-[#6B5D52]">Prueba ajustando los filtros o crea un nuevo producto.</p>
-          </CardContent>
-        </Card>
-      ) : (
+            </CardContent>
+          </Card>
+        ) : (
         <ScrollArea className="mx-auto w-full max-w-6xl rounded-3xl border border-[#E1D5C8] bg-white/80 backdrop-blur">
           <div className="divide-y divide-[#F1E6D8]">
             {products.map((product) => {
@@ -347,7 +347,7 @@ export default function ProductsAdminPage() {
                         )}
                       </div>
 
-                      <div className="space-y-2">
+          <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
                           <h3 className="text-lg font-semibold text-[#3D2817]">{product.name}</h3>
                           <Badge
@@ -382,7 +382,7 @@ export default function ProductsAdminPage() {
                             month: "short",
                             day: "numeric",
                           })}
-                        </p>
+                      </p>
                       </div>
                     </div>
 
@@ -449,7 +449,7 @@ export default function ProductsAdminPage() {
             })}
           </div>
         </ScrollArea>
-      )}
+        )}
     </div>
   )
 }

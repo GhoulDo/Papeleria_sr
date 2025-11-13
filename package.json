@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev --turbopack",
     "lint": "eslint .",
     "start": "next start"
   },
@@ -60,6 +61,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "turn.js": "^1.0.5",
     "vaul": "^0.9.9",
     "zod": "3.25.76"
   },

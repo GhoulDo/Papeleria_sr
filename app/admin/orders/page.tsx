@@ -148,7 +148,7 @@ export default function OrdersAdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="space-y-8">
+      <div className="space-y-8">
           {/* Header */}
           <div className="relative overflow-hidden rounded-3xl border-2 border-[#E1D5C8] bg-gradient-to-br from-[#F5F1ED] via-white to-[#FBF8F4] p-8 shadow-xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#5C4033]/10 to-transparent rounded-bl-full" />
@@ -212,7 +212,7 @@ export default function OrdersAdminPage() {
             <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg hover:shadow-xl transition-all">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div>
+        <div>
                     <p className="text-sm font-medium text-[#6B5D52] mb-1">Entregadas</p>
                     <p className="text-3xl font-bold text-[#3D2817]">{stats.delivered}</p>
                   </div>
@@ -222,7 +222,7 @@ export default function OrdersAdminPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
+        </div>
 
           {/* Filters and Search */}
           <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg">
@@ -239,26 +239,26 @@ export default function OrdersAdminPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Filter className="h-5 w-5 text-[#5C4033]" />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-48 border-2 border-[#D4C4B0] bg-white focus:border-[#5C4033] h-11">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      <SelectItem value="pending">Pendiente</SelectItem>
-                      <SelectItem value="processing">Procesando</SelectItem>
-                      <SelectItem value="shipped">Enviado</SelectItem>
-                      <SelectItem value="delivered">Entregado</SelectItem>
-                      <SelectItem value="cancelled">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            <SelectItem value="pending">Pendiente</SelectItem>
+            <SelectItem value="processing">Procesando</SelectItem>
+            <SelectItem value="shipped">Enviado</SelectItem>
+            <SelectItem value="delivered">Entregado</SelectItem>
+            <SelectItem value="cancelled">Cancelado</SelectItem>
+          </SelectContent>
+        </Select>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Orders List */}
-          {orders.length === 0 ? (
+        {orders.length === 0 ? (
             <Card className="border-dashed border-2 border-[#D4C4B0] bg-gradient-to-br from-[#F5F1ED] to-white py-16 text-center shadow-lg">
               <CardContent className="space-y-4">
                 <div className="mx-auto w-20 h-20 rounded-full bg-[#F5F1ED] flex items-center justify-center mb-4">
@@ -270,14 +270,14 @@ export default function OrdersAdminPage() {
                     ? "No se encontraron órdenes con los filtros aplicados. Intenta con otros criterios."
                     : "Aún no hay órdenes registradas en el sistema."}
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
+            </CardContent>
+          </Card>
+        ) : (
             <div className="space-y-4">
-              {orders.map((order) => {
-                const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending
+            {orders.map((order) => {
+              const statusInfo = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending
                 const StatusIcon = statusInfo.icon
-                return (
+              return (
                   <Card 
                     key={order.id} 
                     className="group border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] hover:border-[#5C4033] hover:shadow-xl transition-all duration-300 overflow-hidden"
@@ -321,7 +321,7 @@ export default function OrdersAdminPage() {
                           <div className="text-right">
                             <p className="text-xs text-[#8B6F47] mb-1 uppercase tracking-wider">Total</p>
                             <p className="text-3xl font-bold text-[#5C4033]">${order.total_amount.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                          </div>
+                      </div>
                           <Button 
                             asChild 
                             className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white hover:from-[#3D2817] hover:to-[#2A1C10] shadow-lg hover:shadow-xl transition-all"
@@ -329,16 +329,16 @@ export default function OrdersAdminPage() {
                             <Link href={`/admin/orders/${order.id}`}>
                               <Eye className="h-4 w-4 mr-2" />
                               Ver Detalles
-                            </Link>
-                          </Button>
-                        </div>
+                          </Link>
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
         </div>
       </div>
     </div>

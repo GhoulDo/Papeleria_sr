@@ -23,7 +23,7 @@ export function Navbar() {
       await new Promise(resolve => setTimeout(resolve, 150))
       
       // Redirigir y refrescar
-      router.push("/")
+    router.push("/")
       router.refresh()
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
@@ -41,6 +41,9 @@ export function Navbar() {
           </Link>
           <Link href="/categories" className="text-sm text-[#3D2817] hover:text-[#5C4033] transition font-medium">
             Categorías
+          </Link>
+          <Link href="/catalog" className="text-sm text-[#3D2817] hover:text-[#5C4033] transition font-medium">
+            Catálogo
           </Link>
         </div>
 

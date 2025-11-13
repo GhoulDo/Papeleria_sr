@@ -3,6 +3,43 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Turn.js Custom Styles */
+#flipbook {
+  margin: 0 auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+#flipbook .hard {
+  background-color: white;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#flipbook .page {
+  background-color: white;
+  overflow: hidden;
+}
+
+#flipbook .page-wrapper {
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Responsive adjustments for Turn.js */
+@media (max-width: 1024px) {
+  #flipbook {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  #flipbook {
+    min-height: 400px;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #3d2817;

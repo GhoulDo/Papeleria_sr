@@ -47,33 +47,33 @@ export default function HomePage() {
             </span>
             <h1 className="text-4xl font-bold leading-tight md:text-5xl">
               Todo para la escuela, oficina y tu emprendimiento en un solo lugar
-            </h1>
+                </h1>
             <p className="text-lg text-[#6B5D52] md:text-xl">
               Brindamos productos y servicios de papelería con atención personalizada, precios justos y soluciones
               oportunas que responden a las necesidades de estudiantes, profesionales y negocios locales.
-            </p>
+                </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="bg-[#5C4033] text-white hover:bg-[#3D2817]">
-                <Link href="/products">
+                  <Link href="/products">
                   Explorar catálogo
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              {!user && !loading && (
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                {!user && !loading && (
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
                   className="border-[#D4C4B0] bg-white/70 text-[#5C4033] hover:bg-[#F8F4ED]"
-                >
+                  >
                   <Link href="/auth/register">
                     Crear cuenta
                     <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Link>
-                </Button>
-              )}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
 
           <div className="relative mx-auto grid w-full max-w-md gap-4 md:w-1/2">
             <div className="rounded-3xl border border-[#E1D5C8] bg-white/90 p-6 shadow-lg backdrop-blur">
@@ -124,7 +124,7 @@ export default function HomePage() {
             title="Visión"
             description="Para el año 2027 queremos posicionarnos como una papelería innovadora y sostenible, con una oferta integral que responda a las necesidades del mercado local y regional, fortaleciendo nuestro emprendimiento familiar."
           />
-        </div>
+      </div>
       </section>
 
       {/* Product Categories */}
@@ -148,7 +148,7 @@ export default function HomePage() {
                   <span>{item}</span>
                 </div>
               ))}
-            </div>
+          </div>
           </div>
 
           <div className="relative mx-auto h-80 w-full max-w-sm overflow-hidden rounded-[32px] border border-[#E1D5C8] bg-white/90 shadow-lg">
@@ -178,15 +178,15 @@ export default function HomePage() {
                 <Mail className="h-4 w-4 text-[#5C4033]" />
                 papeleriyvariedadessr@gmail.com
               </span>
-            </div>
-          </div>
+        </div>
+      </div>
 
           <div className="rounded-3xl border border-[#E1D5C8] bg-[#F8F4ED] p-6 shadow-sm">
             <h3 className="text-2xl font-semibold text-[#3D2817]">¿Listo para tu próxima compra?</h3>
             <p className="mt-3 text-sm text-[#6B5D52]">
               Regístrate para obtener descuentos especiales o navega por nuestro catálogo en línea. ¡Estamos listos para
               asesorarte y surtir tus proyectos!
-            </p>
+          </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild className="bg-[#5C4033] text-white hover:bg-[#3D2817]">
                 <Link href="/products">
@@ -200,7 +200,7 @@ export default function HomePage() {
                     Crear cuenta gratis
                     <ArrowUpRight className="ml-2 h-4 w-4" />
                   </Link>
-                </Button>
+            </Button>
               )}
             </div>
           </div>

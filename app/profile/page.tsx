@@ -120,8 +120,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex justify-center items-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
     )
@@ -134,7 +134,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="space-y-8">
         <div>
           <h1 className="text-4xl font-bold">Mi Perfil</h1>

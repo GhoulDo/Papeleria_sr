@@ -119,7 +119,7 @@ export default function NewPromotionPage() {
             Define los parámetros de tu campaña: código, vigencia, descuentos y límites de uso.
           </p>
         </div>
-      </div>
+        </div>
 
       <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl">
         <CardContent className="space-y-6 pt-6">
@@ -141,20 +141,20 @@ export default function NewPromotionPage() {
                 placeholder="Ej: Semana del Cuaderno, Promo Navidad"
                 required
               />
-            </div>
+              </div>
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-[#3D2817]">Descripción</Label>
-              <Textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={3}
+                <Textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3}
                 className="border-2 border-[#D4C4B0] bg-white/80 focus:border-[#5C4033] focus:ring-2 focus:ring-[#5C4033]/20 resize-none"
                 placeholder="Cuéntale a los clientes en qué consiste la promoción y a qué productos aplica..."
-              />
+                />
               <p className="text-xs text-[#8B6F47]">Esta descripción aparecerá en la página pública de promociones</p>
-            </div>
+              </div>
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-[#3D2817] flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function NewPromotionPage() {
                 <span>💡</span>
                 <span>Este código lo usarán los clientes en el checkout. Debe ser único y fácil de recordar.</span>
               </p>
-            </div>
+              </div>
 
             <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F5F1ED] to-white border-2 border-[#E1D5C8] space-y-4">
               <div className="flex items-center gap-2 mb-2">
@@ -209,21 +209,21 @@ export default function NewPromotionPage() {
                     ) : (
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5D52]">$</span>
                     )}
-                    <Input
-                      name="discountValue"
-                      type="number"
-                      step="0.01"
+                  <Input
+                    name="discountValue"
+                    type="number"
+                    step="0.01"
                       min="0"
-                      value={formData.discountValue}
-                      onChange={handleInputChange}
+                    value={formData.discountValue}
+                    onChange={handleInputChange}
                       className="border-2 border-[#D4C4B0] bg-white/80 focus:border-[#5C4033] focus:ring-2 focus:ring-[#5C4033]/20 pl-8 h-11"
                       placeholder={formData.discountType === "percentage" ? "15" : "20000"}
-                      required
-                    />
+                    required
+                  />
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
 
             <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F5F1ED] to-white border-2 border-[#E1D5C8] space-y-4">
               <div className="flex items-center gap-2 mb-2">
@@ -253,8 +253,8 @@ export default function NewPromotionPage() {
                     required
                   />
                 </div>
+                </div>
               </div>
-            </div>
 
             <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F5F1ED] to-white border-2 border-[#E1D5C8] space-y-4">
               <div className="flex items-center gap-2 mb-2">
@@ -279,16 +279,16 @@ export default function NewPromotionPage() {
                   <Label className="text-sm font-medium text-[#3D2817]">Compra mínima</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5D52]">$</span>
-                    <Input
-                      name="minPurchaseAmount"
-                      type="number"
-                      step="0.01"
+                  <Input
+                    name="minPurchaseAmount"
+                    type="number"
+                    step="0.01"
                       min="0"
-                      value={formData.minPurchaseAmount}
-                      onChange={handleInputChange}
+                    value={formData.minPurchaseAmount}
+                    onChange={handleInputChange}
                       className="border-2 border-[#D4C4B0] bg-white/80 focus:border-[#5C4033] focus:ring-2 focus:ring-[#5C4033]/20 pl-8 h-11"
                       placeholder="Ej. 50000"
-                    />
+                  />
                   </div>
                   <p className="text-xs text-[#8B6F47]">Monto mínimo para aplicar el descuento</p>
                 </div>
@@ -314,7 +314,7 @@ export default function NewPromotionPage() {
                 onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
                 className="ml-4"
               />
-            </div>
+              </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t-2 border-[#E1D5C8]">
               <Button
@@ -331,22 +331,22 @@ export default function NewPromotionPage() {
                 disabled={saving} 
                 className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white hover:from-[#3D2817] hover:to-[#2A1C10] px-8 h-11 shadow-lg hover:shadow-xl transition-all"
               >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
                   <>
                     <span>Crear promoción</span>
                     <CheckCircle2 className="ml-2 h-4 w-4" />
                   </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </>
   )

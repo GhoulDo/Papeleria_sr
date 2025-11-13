@@ -120,44 +120,44 @@ export default function OrderDetailAdminPage() {
 
     let cancelled = false
 
-    const fetchOrder = async () => {
+  const fetchOrder = async () => {
       setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select(
-            `
-            *,
-            order_items(
-              id,
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select(
+          `
+          *,
+          order_items(
+            id,
               product_id,
-              quantity,
-              unit_price,
-              product:products(name)
-            ),
-            user:users(email, full_name, phone)
-          `,
-          )
+            quantity,
+            unit_price,
+            product:products(name)
+          ),
+          user:users(email, full_name, phone)
+        `,
+        )
           .eq("id", orderId)
-          .single()
+        .single()
 
         if (cancelled) return
 
-        if (error) throw error
-        setOrder(data)
-      } catch (error) {
+      if (error) throw error
+      setOrder(data)
+    } catch (error) {
         if (cancelled) return
-        console.error("Error fetching order:", error)
+      console.error("Error fetching order:", error)
         toast({
           title: "Error",
           description: "No se pudo cargar la orden",
           variant: "destructive",
         })
-      } finally {
+    } finally {
         if (!cancelled) {
-          setLoading(false)
-        }
-      }
+      setLoading(false)
+    }
+  }
     }
 
     fetchOrder()
@@ -258,7 +258,7 @@ export default function OrderDetailAdminPage() {
   if (!order) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
-        <div className="max-w-6xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-6xl mx-auto px-4 py-12 text-center">
           <div className="space-y-4">
             <div className="text-6xl mb-4">📋</div>
             <h1 className="text-3xl font-bold text-[#3D2817]">Orden no encontrada</h1>
@@ -279,7 +279,7 @@ export default function OrderDetailAdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="space-y-8">
+      <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between flex-wrap gap-4">
             <Button
@@ -294,7 +294,7 @@ export default function OrderDetailAdminPage() {
               <div className="p-3 rounded-2xl bg-gradient-to-br from-[#5C4033] to-[#3D2817] shadow-lg">
                 <FileText className="h-6 w-6 text-white" />
               </div>
-              <div>
+        <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-[#3D2817]">Orden {order.order_number}</h1>
                 <p className="text-[#6B5D52] mt-1 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
@@ -305,22 +305,22 @@ export default function OrderDetailAdminPage() {
                     hour: "2-digit",
                     minute: "2-digit"
                   })}
-                </p>
+          </p>
               </div>
             </div>
-          </div>
+        </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Status Management */}
+            {/* Status Management */}
               <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg">
                 <CardHeader className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white">
                   <CardTitle className="text-[#3D2817] flex items-center gap-2">
                     <Package className="h-5 w-5 text-[#5C4033]" />
                     Gestión de Orden
                   </CardTitle>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-[#3D2817] flex items-center gap-2">
@@ -330,58 +330,58 @@ export default function OrderDetailAdminPage() {
                         {statusInfo.label}
                       </Badge>
                     </Label>
-                    <Select value={order.status} onValueChange={handleStatusChange} disabled={updating}>
+                  <Select value={order.status} onValueChange={handleStatusChange} disabled={updating}>
                       <SelectTrigger className="border-2 border-[#D4C4B0] bg-white focus:border-[#5C4033] h-11">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
                         {statusOptions.map((status) => {
                           const config = statusConfig[status as keyof typeof statusConfig]
                           const Icon = config.icon
                           return (
-                            <SelectItem key={status} value={status}>
+                        <SelectItem key={status} value={status}>
                               <div className="flex items-center gap-2">
                                 <Icon className="h-4 w-4" />
                                 {config.label}
                               </div>
-                            </SelectItem>
+                        </SelectItem>
                           )
                         })}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-[#3D2817] flex items-center gap-2">
                       <CreditCard className="h-4 w-4 text-[#5C4033]" />
                       Estado de Pago
                     </Label>
-                    <Select value={order.payment_status} onValueChange={handlePaymentStatusChange} disabled={updating}>
+                  <Select value={order.payment_status} onValueChange={handlePaymentStatusChange} disabled={updating}>
                       <SelectTrigger className="border-2 border-[#D4C4B0] bg-white focus:border-[#5C4033] h-11">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pendiente</SelectItem>
-                        <SelectItem value="completed">Completado</SelectItem>
-                        <SelectItem value="failed">Fallido</SelectItem>
-                        <SelectItem value="refunded">Reembolsado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pendiente</SelectItem>
+                      <SelectItem value="completed">Completado</SelectItem>
+                      <SelectItem value="failed">Fallido</SelectItem>
+                      <SelectItem value="refunded">Reembolsado</SelectItem>
+                    </SelectContent>
+                  </Select>
                     <Badge className={cn("mt-2", paymentStatusInfo.color)}>
                       {paymentStatusInfo.label}
                     </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Customer Info */}
+            {/* Customer Info */}
               <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg">
                 <CardHeader className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white">
                   <CardTitle className="text-[#3D2817] flex items-center gap-2">
                     <User className="h-5 w-5 text-[#5C4033]" />
                     Información del Cliente
                   </CardTitle>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start gap-3 p-4 rounded-xl border border-[#E1D5C8] bg-white/50">
                     <div className="p-2 rounded-lg bg-gradient-to-br from-[#F5F1ED] to-white border border-[#E1D5C8]">
@@ -404,23 +404,23 @@ export default function OrderDetailAdminPage() {
                   <div className="flex items-start gap-3 p-4 rounded-xl border border-[#E1D5C8] bg-white/50">
                     <div className="p-2 rounded-lg bg-gradient-to-br from-[#F5F1ED] to-white border border-[#E1D5C8]">
                       <Phone className="h-5 w-5 text-[#5C4033]" />
-                    </div>
+                </div>
                     <div className="flex-1">
                       <p className="text-xs text-[#8B6F47] mb-1 uppercase tracking-wider">Teléfono</p>
                       <p className="text-[#3D2817]">{order.user.phone || "No proporcionado"}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Items */}
+            {/* Items */}
               <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg">
                 <CardHeader className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white">
                   <CardTitle className="text-[#3D2817] flex items-center gap-2">
                     <ShoppingBag className="h-5 w-5 text-[#5C4033]" />
                     Productos ({order.order_items.length})
                   </CardTitle>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     {order.order_items.map((item, index) => (
@@ -440,51 +440,51 @@ export default function OrderDetailAdminPage() {
                         <div className="text-right">
                           <p className="text-lg font-bold text-[#5C4033]">
                             ${(item.unit_price * item.quantity).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </p>
-                        </div>
+                      </p>
+                    </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
 
-              {/* Shipping Address */}
+            {/* Shipping Address */}
               <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-lg">
                 <CardHeader className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white">
                   <CardTitle className="text-[#3D2817] flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-[#5C4033]" />
                     Dirección de Envío
                   </CardTitle>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="p-6">
                   <div className="p-4 rounded-xl border border-[#E1D5C8] bg-white/50">
                     <p className="font-medium text-[#3D2817] mb-1">{order.shipping_address}</p>
                     <p className="text-[#6B5D52]">{order.shipping_city}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+              </CardContent>
+            </Card>
+          </div>
 
             {/* Summary Sidebar */}
-            <div>
+          <div>
               <Card className="border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl sticky top-4">
                 <CardHeader className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white">
                   <CardTitle className="text-[#3D2817] flex items-center gap-2">
                     <DollarSign className="h-5 w-5 text-[#5C4033]" />
                     Resumen Financiero
                   </CardTitle>
-                </CardHeader>
+              </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-3 border-b border-[#E1D5C8] pb-4">
-                    <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm">
                       <span className="text-[#6B5D52]">Subtotal</span>
                       <span className="font-medium text-[#3D2817]">${order.subtotal.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
+                  </div>
+                  <div className="flex justify-between text-sm">
                       <span className="text-[#6B5D52]">Impuestos</span>
                       <span className="font-medium text-[#3D2817]">${order.tax_amount.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
+                  </div>
+                  <div className="flex justify-between text-sm">
                       <span className="text-[#6B5D52]">Envío</span>
                       <span className="font-medium text-[#3D2817]">${order.shipping_cost.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
@@ -494,9 +494,9 @@ export default function OrderDetailAdminPage() {
                     <div className="p-4 rounded-xl bg-gradient-to-br from-[#5C4033] to-[#3D2817] text-white">
                       <p className="text-xs uppercase tracking-wider mb-2 opacity-90">Total</p>
                       <p className="text-4xl font-bold">${order.total_amount.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </div>
-                    
-                    <div className="space-y-2">
+                </div>
+
+                <div className="space-y-2">
                       <p className="text-xs font-semibold text-[#8B6F47] uppercase tracking-wider">Estados</p>
                       <div className="flex flex-wrap gap-2">
                         <Badge className={cn("flex items-center gap-1.5", statusInfo.color)}>
@@ -505,12 +505,12 @@ export default function OrderDetailAdminPage() {
                         </Badge>
                         <Badge className={cn(paymentStatusInfo.color)}>
                           {paymentStatusInfo.label}
-                        </Badge>
+                    </Badge>
                       </div>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
             </div>
           </div>
         </div>

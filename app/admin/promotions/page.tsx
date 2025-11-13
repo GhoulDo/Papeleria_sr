@@ -191,11 +191,11 @@ export default function PromotionsAdminPage() {
           asChild 
           className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] hover:from-[#3D2817] hover:to-[#2A1C10] text-white shadow-lg hover:shadow-xl transition-all h-12 px-6"
         >
-          <Link href="/admin/promotions/new">
+            <Link href="/admin/promotions/new">
             <Plus className="mr-2 h-5 w-5" />
-            Nueva Promoción
-          </Link>
-        </Button>
+              Nueva Promoción
+            </Link>
+          </Button>
       </header>
 
       <Card className="mx-auto w-full max-w-6xl border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl">
@@ -232,7 +232,7 @@ export default function PromotionsAdminPage() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+        </div>
 
           <div className="rounded-2xl border-2 border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white px-5 py-4 text-sm text-[#6B5D52] shadow-inner">
             <div className="flex items-center justify-between">
@@ -278,9 +278,9 @@ export default function PromotionsAdminPage() {
                 </Link>
               </Button>
             )}
-          </CardContent>
-        </Card>
-      ) : (
+            </CardContent>
+          </Card>
+        ) : (
         <ScrollArea className="mx-auto w-full max-w-6xl rounded-3xl border-2 border-[#E1D5C8] bg-gradient-to-br from-white to-[#FBF8F4] shadow-xl">
           <div className="divide-y divide-[#E1D5C8]">
             {promotions.map((promo) => {
@@ -413,7 +413,7 @@ export default function PromotionsAdminPage() {
             })}
           </div>
         </ScrollArea>
-      )}
+        )}
     </div>
   )
 }

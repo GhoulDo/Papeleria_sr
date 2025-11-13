@@ -173,12 +173,12 @@ export default function UsersAdminPage() {
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_250px]">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-[#8B6F47]" />
-              <Input
-                value={search}
+            <Input
+              value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Buscar por correo o nombre..."
                 className="pl-10 h-11 border-[#D4C4B0] bg-white/70"
-              />
+            />
             </div>
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-1">
               <Select value={roleFilter} onValueChange={(value: RoleFilter) => setRoleFilter(value)}>
@@ -214,7 +214,7 @@ export default function UsersAdminPage() {
                 {filteredCount === 1 ? "usuario" : "usuarios"} filtrados.
               </span>
             )}
-          </div>
+        </div>
         </CardContent>
       </Card>
 
@@ -224,9 +224,9 @@ export default function UsersAdminPage() {
             <UserCog className="mx-auto h-10 w-10 text-[#8B6F47]" />
             <h3 className="text-2xl font-semibold text-[#3D2817]">Sin resultados</h3>
             <p className="text-sm text-[#6B5D52]">Ajusta los filtros o verifica la búsqueda ingresada.</p>
-          </CardContent>
-        </Card>
-      ) : (
+            </CardContent>
+          </Card>
+        ) : (
         <ScrollArea className="mx-auto w-full max-w-6xl rounded-3xl border border-[#E1D5C8] bg-white/80 backdrop-blur">
           <div className="divide-y divide-[#F1E6D8]">
             {users.map((user) => {
@@ -261,7 +261,7 @@ export default function UsersAdminPage() {
                             month: "short",
                             day: "numeric",
                           })}
-                        </p>
+                      </p>
                       </div>
                     </div>
 
@@ -313,7 +313,7 @@ export default function UsersAdminPage() {
             })}
           </div>
         </ScrollArea>
-      )}
+        )}
     </div>
   )
 }

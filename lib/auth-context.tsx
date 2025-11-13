@@ -49,6 +49,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         if (sessionError) {
+          // Manejar errores de red de forma más elegante
+          if (sessionError.message?.includes("Failed to fetch") || sessionError.message?.includes("NetworkError")) {
+            console.warn("[AuthContext] Error de conexión al obtener sesión:", sessionError.message)
+            // Si es un error de red y no es un retry, establecer estados vacíos
+            if (!isRetry && mountedRef.current && !authStateChanged) {
+              setUser(null)
+              setUserRole(null)
+              setLoading(false)
+            }
+            return
+          }
+          
           console.error("[AuthContext] Error getting session:", sessionError)
           // Si no hay sesión, establecer estados vacíos
           if (sessionError.message?.includes("session") || sessionError.message?.includes("missing")) {
@@ -87,13 +99,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Si no hay sesión, intentar obtener el usuario directamente (puede fallar)
-        try {
-          const {
-            data: { user },
+      try {
+        const {
+          data: { user },
             error: getUserError,
-          } = await supabase.auth.getUser()
+        } = await supabase.auth.getUser()
 
           if (getUserError) {
+            // Manejar errores de red
+            if (getUserError.message?.includes("Failed to fetch") || getUserError.message?.includes("NetworkError")) {
+              console.warn("[AuthContext] Error de conexión al obtener usuario:", getUserError.message)
+              // Si es un error de red y no es un retry, establecer estados vacíos
+              if (!isRetry && mountedRef.current && !authStateChanged) {
+                setUser(null)
+                setUserRole(null)
+                setLoading(false)
+              }
+              return
+            }
+            
             // Si el error es "session missing", es normal cuando no hay sesión
             if (getUserError.message?.includes("session") || getUserError.message?.includes("missing")) {
               if (mountedRef.current && !authStateChanged) {
@@ -106,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             console.error("[AuthContext] Error getting user:", getUserError)
             // Si es un error de red o token, intentar refrescar
-            if (getUserError.message?.includes("JWT") || getUserError.message?.includes("token")) {
+            if (getUserError.message?.includes("JWT") || getUserError.message?.includes("token") || getUserError.message?.includes("Failed to fetch")) {
               if (retryCount < maxRetries && mountedRef.current) {
                 retryCount++
                 console.log(`[AuthContext] Reintentando obtener usuario (intento ${retryCount}/${maxRetries})...`)
@@ -119,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!mountedRef.current) return
 
           // Establecer el usuario si se obtuvo correctamente
-          if (user) {
+        if (user) {
             setUser(user)
             if (mountedRef.current && !authStateChanged) {
               setLoading(false)
@@ -146,6 +170,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } catch (getUserException) {
+          // Manejar errores de red
+          if (getUserException instanceof Error && 
+              (getUserException.message?.includes("Failed to fetch") || getUserException.message?.includes("NetworkError"))) {
+            console.warn("[AuthContext] Error de conexión:", getUserException.message)
+            if (mountedRef.current && !authStateChanged && !isRetry) {
+              setUser(null)
+              setUserRole(null)
+              setLoading(false)
+            }
+            return
+          }
+          
           // Si getUser() lanza una excepción (como "session missing"), manejarlo silenciosamente
           if (getUserException instanceof Error && 
               (getUserException.message?.includes("session") || getUserException.message?.includes("missing"))) {
@@ -159,11 +195,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw getUserException // Re-lanzar otros errores
         }
       } catch (error) {
+        // Manejar errores de red de forma más elegante
+        if (error instanceof Error && 
+            (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError"))) {
+          console.warn("[AuthContext] Error de conexión general:", error.message)
+          if (mountedRef.current && !authStateChanged && !isRetry) {
+            setUser(null)
+            setUserRole(null)
+            setLoading(false)
+          }
+          return
+        }
+        
         console.error("[AuthContext] Error fetching user:", error)
         // En caso de error, establecer loading a false para no bloquear la UI
         if (mountedRef.current && !authStateChanged) {
-          setLoading(false)
-        }
+        setLoading(false)
+      }
         
         // Reintentar solo si no es un retry y no hemos excedido el límite
         if (!isRetry && retryCount < maxRetries && mountedRef.current) {
@@ -221,8 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
       } else {
         if (mountedRef.current) {
-          setUserRole(null)
-        }
+        setUserRole(null)
+      }
       }
     })
 

@@ -79,7 +79,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 bg-[#F5F1ED]">
           <div className="flex justify-center mb-4">
             <div className="relative w-20 h-20">
-              <Image src="/logo.png" alt="Papelería y Variedades S.R" fill className="object-contain" />
+              <Image src="/logo.png" alt="Papelería y Variedades S.R" fill className="object-contain" sizes="80px" />
             </div>
           </div>
           <CardTitle className="text-2xl text-[#3D2817] text-center">Inicia Sesión</CardTitle>
