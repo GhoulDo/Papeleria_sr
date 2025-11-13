@@ -43,7 +43,7 @@ const nextConfig = {
   // Configurar Turbopack para evitar conflictos con webpack
   turbopack: {},
   // Mantener webpack para desarrollo si es necesario (usar --webpack flag)
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     // Configurar webpack para que turn.js pueda encontrar jQuery
     if (!isServer) {
       try {
@@ -57,18 +57,24 @@ const nextConfig = {
         
         // ProvidePlugin: hacer que jQuery esté disponible globalmente cuando se requiere
         // Esto asegura que turn.js use el mismo jQuery que está en window.jQuery
-        const webpack = require('webpack')
-        config.plugins = [
-          ...(config.plugins || []),
-          new webpack.ProvidePlugin({
-            $: jqueryPath,
-            jQuery: jqueryPath,
-            'window.jQuery': jqueryPath,
-            'window.$': jqueryPath,
-          }),
-        ]
+        // Usar webpack del parámetro en lugar de require para compatibilidad
+        if (webpack) {
+          config.plugins = [
+            ...(config.plugins || []),
+            new webpack.ProvidePlugin({
+              $: jqueryPath,
+              jQuery: jqueryPath,
+              'window.jQuery': jqueryPath,
+              'window.$': jqueryPath,
+            }),
+          ]
+        }
       } catch (error) {
-        console.warn('jQuery not found in node_modules, webpack configuration not set')
+        // En producción, si jQuery no está disponible, continuar sin la configuración
+        // El componente manejará la carga dinámica
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('jQuery not found in node_modules, webpack configuration not set')
+        }
       }
     }
     return config
