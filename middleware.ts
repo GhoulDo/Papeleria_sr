@@ -1,32 +1,51 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+// Timeout para evitar que el middleware tarde demasiado (2 segundos máximo)
+// Vercel tiene un límite de 10 segundos para middleware, pero es mejor ser más conservador
+const MIDDLEWARE_TIMEOUT = 2000
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            supabaseResponse = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+          },
         },
       },
-    },
-  )
+    )
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  await supabase.auth.getUser()
+    // IMPORTANT: DO NOT REMOVE auth.getUser()
+    // Agregar timeout para evitar que el middleware tarde demasiado
+    const getUserPromise = supabase.auth.getUser()
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), MIDDLEWARE_TIMEOUT)
+    )
+
+    // Usar Promise.race para aplicar timeout
+    await Promise.race([getUserPromise, timeoutPromise])
+  } catch (error) {
+    // Si hay un error o timeout, continuar con la respuesta sin bloquear
+    // Esto evita que el middleware cause timeouts en producción
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[Middleware] Error or timeout getting user:", error instanceof Error ? error.message : error)
+    }
+  }
 
   return supabaseResponse
 }
@@ -39,7 +58,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - api routes (si las hay)
+     * - archivos estáticos comunes
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.svg).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(png|svg|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)|api/).*)",
   ],
 }
