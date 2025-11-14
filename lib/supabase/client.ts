@@ -23,7 +23,27 @@ export function createClient() {
       )
     }
 
+    // Validar que la URL de Supabase sea válida
+    try {
+      const url = new URL(supabaseUrl)
+      if (!url.hostname.includes("supabase.co") && !url.hostname.includes("supabase.in")) {
+        console.warn(`[Supabase Client] La URL de Supabase parece incorrecta: ${supabaseUrl}`)
+      }
+    } catch (error) {
+      console.error(`[Supabase Client] URL de Supabase inválida: ${supabaseUrl}`, error)
+      throw new Error(`La URL de Supabase es inválida: ${supabaseUrl}`)
+    }
+
     supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        // Deshabilitar el auto-refresh si hay problemas de conexión
+        // Esto evita intentos infinitos de refrescar tokens cuando la URL es incorrecta
+        storage: typeof window !== "undefined" ? window.localStorage : undefined,
+        flowType: "pkce",
+      },
       cookies: {
         getAll() {
           if (typeof document === "undefined") return []
@@ -49,6 +69,22 @@ export function createClient() {
             }
             
             document.cookie = cookieString
+          })
+        },
+      },
+      global: {
+        // Interceptar errores de fetch para manejar mejor los errores de conexión
+        fetch: (url, options = {}) => {
+          return fetch(url, options).catch((error) => {
+            // Si hay un error de conexión (ERR_NAME_NOT_RESOLVED, etc.), limpiar tokens inválidos
+            if (error.message?.includes("Failed to fetch") || 
+                error.message?.includes("ERR_NAME_NOT_RESOLVED") ||
+                error.message?.includes("NetworkError")) {
+              console.warn(`[Supabase Client] Error de conexión al intentar conectar con Supabase: ${url}`)
+              // No lanzar el error, solo registrarlo para evitar loops infinitos
+              return Promise.reject(new Error("No se pudo conectar con el servidor de autenticación"))
+            }
+            return Promise.reject(error)
           })
         },
       },

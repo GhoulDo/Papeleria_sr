@@ -269,10 +269,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
       } else {
         if (mountedRef.current) {
-        setUserRole(null)
-      }
+          setUserRole(null)
+        }
       }
     })
+
+    // Manejar errores de refresh token de forma más segura
+    // Escuchar errores de la consola relacionados con Supabase
+    let refreshTokenErrorCount = 0
+    const MAX_REFRESH_ERRORS = 3
+    
+    // Interceptar errores de refresh token usando el listener de errores de la consola
+    const handleRefreshTokenError = async () => {
+      refreshTokenErrorCount++
+      
+      if (refreshTokenErrorCount >= MAX_REFRESH_ERRORS && mountedRef.current) {
+        console.error("[AuthContext] Demasiados errores al refrescar token. Limpiando sesión inválida.")
+        refreshTokenErrorCount = 0
+        
+        // Limpiar la sesión inválida para evitar más intentos
+        try {
+          await supabase.auth.signOut()
+          // Limpiar también localStorage y cookies relacionadas
+          if (typeof window !== "undefined") {
+            const keys = Object.keys(localStorage)
+            keys.forEach(key => {
+              if (key.includes("supabase") || key.includes("auth")) {
+                localStorage.removeItem(key)
+              }
+            })
+          }
+        } catch (signOutError) {
+          // Ignorar errores al hacer signOut
+        }
+        
+        if (mountedRef.current) {
+          setUser(null)
+          setUserRole(null)
+          setLoading(false)
+        }
+      }
+    }
+    
+    // Escuchar errores no capturados relacionados con Supabase
+    const errorHandler = (event: ErrorEvent) => {
+      const errorMessage = event.message || ""
+      if (errorMessage.includes("supabase.co") && 
+          (errorMessage.includes("token") || errorMessage.includes("ERR_NAME_NOT_RESOLVED"))) {
+        handleRefreshTokenError()
+      }
+    }
+    
+    window.addEventListener("error", errorHandler)
 
     // Verificación periódica opcional - solo si la página está activa y han pasado 5 minutos
     // Esto es menos agresivo y solo se ejecuta cuando realmente es necesario
@@ -368,6 +416,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearInterval(intervalId)
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("error", errorHandler)
     }
   }, []) // Sin dependencias para evitar re-crear el intervalo
 
