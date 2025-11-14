@@ -8,11 +8,12 @@ const MIDDLEWARE_TIMEOUT = 2000
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Excluir archivos estáticos y rutas de API
+  // Excluir archivos estáticos, rutas de API y rutas de autenticación
   if (
     pathname.startsWith("/_next/static") ||
     pathname.startsWith("/_next/image") ||
     pathname.startsWith("/api/") ||
+    pathname.startsWith("/auth/") ||
     pathname === "/favicon.ico" ||
     /\.(png|svg|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$/.test(pathname)
   ) {
@@ -45,13 +46,22 @@ export async function middleware(request: NextRequest) {
 
     // IMPORTANT: DO NOT REMOVE auth.getUser()
     // Agregar timeout para evitar que el middleware tarde demasiado
-    const getUserPromise = supabase.auth.getUser()
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), MIDDLEWARE_TIMEOUT)
-    )
+    // Pero asegurarse de que las cookies se establezcan correctamente
+    try {
+      const getUserPromise = supabase.auth.getUser()
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), MIDDLEWARE_TIMEOUT)
+      )
 
-    // Usar Promise.race para aplicar timeout
-    await Promise.race([getUserPromise, timeoutPromise])
+      // Usar Promise.race para aplicar timeout
+      await Promise.race([getUserPromise, timeoutPromise])
+    } catch (getUserError) {
+      // Si hay un timeout, aún así necesitamos asegurarnos de que las cookies se establezcan
+      // El error se maneja silenciosamente pero las cookies ya deberían estar establecidas
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[Middleware] Timeout o error en getUser:", getUserError instanceof Error ? getUserError.message : getUserError)
+      }
+    }
   } catch (error) {
     // Si hay un error o timeout, continuar con la respuesta sin bloquear
     // Esto evita que el middleware cause timeouts en producción

@@ -24,12 +24,33 @@ export function createClient() {
     }
 
     supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: false,
-        storage: typeof window !== "undefined" ? window.localStorage : undefined,
-        flowType: "pkce",
+      cookies: {
+        getAll() {
+          if (typeof document === "undefined") return []
+          return document.cookie.split("; ").map(cookie => {
+            const [name, ...rest] = cookie.split("=")
+            return { name, value: decodeURIComponent(rest.join("=")) }
+          })
+        },
+        setAll(cookiesToSet) {
+          if (typeof document === "undefined") return
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieValue = encodeURIComponent(value)
+            let cookieString = `${name}=${cookieValue}`
+            
+            if (options?.path) cookieString += `; path=${options.path}`
+            if (options?.maxAge) cookieString += `; max-age=${options.maxAge}`
+            if (options?.domain) cookieString += `; domain=${options.domain}`
+            if (options?.secure) cookieString += `; secure`
+            if (options?.sameSite) cookieString += `; samesite=${options.sameSite}`
+            if (options?.httpOnly) {
+              // httpOnly no se puede establecer desde JavaScript, se ignora
+              console.warn(`[Supabase Client] Cookie ${name} tiene httpOnly=true pero no se puede establecer desde el cliente`)
+            }
+            
+            document.cookie = cookieString
+          })
+        },
       },
     })
   }

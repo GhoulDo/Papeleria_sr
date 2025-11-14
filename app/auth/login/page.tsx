@@ -45,26 +45,29 @@ export default function LoginPage() {
         // Continuar con rol por defecto si falla
       }
 
-      // Esperar un momento para que el AuthContext se actualice con la nueva sesión
-      // Esto asegura que el estado de autenticación esté sincronizado antes de redirigir
-      await new Promise(resolve => setTimeout(resolve, 300))
-
-      // Verificar que la sesión esté establecida
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      // Verificar que la sesión esté establecida inmediatamente
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error("[Login] Error verificando sesión:", sessionError)
+        throw new Error("No se pudo verificar la sesión. Intenta nuevamente.")
+      }
+      
       if (!currentSession) {
-        throw new Error("No se pudo establecer la sesión. Intenta nuevamente.")
+        // Si no hay sesión inmediatamente, esperar un poco y verificar de nuevo
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const { data: { session: retrySession } } = await supabase.auth.getSession()
+        if (!retrySession) {
+          throw new Error("No se pudo establecer la sesión. Intenta nuevamente.")
+        }
       }
 
       // Redirigir según el rol
       const targetRoute = profile?.role === "admin" ? "/admin" : "/dashboard"
       
-      // Usar router.push en lugar de replace para mejor manejo de navegación
-      router.push(targetRoute)
-      
-      // Forzar un refresh para asegurar que el AuthContext se actualice
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      // Usar window.location.href para forzar una recarga completa y sincronizar cookies
+      // Esto asegura que el middleware y AuthContext se actualicen correctamente
+      window.location.href = targetRoute
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión"
       setError(message)
