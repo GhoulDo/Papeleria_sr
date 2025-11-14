@@ -6,6 +6,19 @@ import { NextResponse, type NextRequest } from "next/server"
 const MIDDLEWARE_TIMEOUT = 2000
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Excluir archivos estáticos y rutas de API
+  if (
+    pathname.startsWith("/_next/static") ||
+    pathname.startsWith("/_next/image") ||
+    pathname.startsWith("/api/") ||
+    pathname === "/favicon.ico" ||
+    /\.(png|svg|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$/.test(pathname)
+  ) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -57,10 +70,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
-     * - api routes (si las hay)
-     * - archivos estáticos comunes
+     * - api routes
+     * - archivos estáticos (se excluyen en el código del middleware)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(png|svg|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)|api/).*)",
+    "/(.*)",
   ],
 }
