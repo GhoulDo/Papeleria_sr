@@ -103,14 +103,15 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
                   const checkInterval = setInterval(() => {
                     attempts++
                     if (checkGlobal === "turn") {
-                      // Turn.js se carga como plugin de jQuery
+                      // Turn.js se carga como plugin de jQuery, no como global
                       const jQuery = (window as any).jQuery
                       if (jQuery && typeof jQuery.fn?.turn === "function") {
                         clearInterval(checkInterval)
                         resolve()
                       } else if (attempts >= maxAttempts) {
                         clearInterval(checkInterval)
-                        reject(new Error(`Global ${checkGlobal} not available after loading`))
+                        // No rechazar aquí, solo verificar después
+                        resolve()
                       }
                     } else {
                       const global = (window as any)[checkGlobal]
@@ -217,14 +218,21 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
           }
 
           // Verificar que jQuery se cargó correctamente - esperar un poco más
-          await new Promise((resolve) => setTimeout(resolve, 200))
+          await new Promise((resolve) => setTimeout(resolve, 300))
           
-          // Verificar que jQuery está disponible
+          // Verificar que jQuery está disponible y sincronizado
           let jqueryReady = false
           let attempts = 0
-          while (!jqueryReady && attempts < 20) {
+          while (!jqueryReady && attempts < 30) {
             const $ = (window as any).jQuery
             if ($ && typeof $.fn !== "undefined") {
+              // Asegurar que jQuery esté disponible en window.jQuery y window.$
+              if (!(window as any).jQuery) {
+                (window as any).jQuery = $
+              }
+              if (!(window as any).$) {
+                (window as any).$ = $
+              }
               jqueryReady = true
               break
             }
@@ -237,161 +245,126 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
             setIsLoading(false)
             return
           }
+          
+          // Verificación final: asegurar que jQuery esté disponible globalmente
+          const finalJQuery = (window as any).jQuery
+          if (!finalJQuery || typeof finalJQuery.fn === "undefined") {
+            console.error("[Catalog] jQuery not available after all checks")
+            setIsLoading(false)
+            return
+          }
+          
+          // Sincronizar una vez más antes de cargar turn.js
+          (window as any).jQuery = finalJQuery
+          ;(window as any).$ = finalJQuery
+          
+          console.log("[Catalog] jQuery verified and synchronized:", {
+            jQuery: !!(window as any).jQuery,
+            $: !!(window as any).$,
+            fn: !!(window as any).jQuery?.fn
+          })
 
-          // Cargar Turn.js - Intentar múltiples fuentes
-          // Obtener referencia a jQuery una sola vez
+          // Cargar Turn.js - Priorizar archivo local desde public
           let jQueryRef = (window as any).jQuery
           
           // Verificar si ya está disponible como plugin de jQuery
           const turnAlreadyAvailable = jQueryRef && typeof jQueryRef.fn?.turn === "function"
           
           if (!turnAlreadyAvailable) {
-            console.log("[Catalog] Loading Turn.js...")
+            console.log("[Catalog] Loading Turn.js from local file...")
             
-            // Estrategia 1: Intentar cargar desde CDN con URLs correctas
-            const turnCDNs = [
-              "https://cdn.jsdelivr.net/npm/turn.js@4.1.0/turn.js", // Sin .min
-              "https://unpkg.com/turn.js@4.1.0/turn.js",
-              "https://cdn.jsdelivr.net/gh/blasten/turn.js@4.1.0/turn.js",
-            ]
-
-            let turnLoaded = false
-            for (const cdn of turnCDNs) {
-              try {
-                console.log(`[Catalog] Trying to load Turn.js from ${cdn}`)
-                await loadScript(cdn, "turnjs-script", "turn")
-                // Actualizar referencia a jQuery después de cargar
-                jQueryRef = (window as any).jQuery
-                // Verificar que turn está disponible como plugin de jQuery
-                if (jQueryRef && typeof jQueryRef.fn?.turn === "function") {
-                  console.log("[Catalog] Turn.js loaded successfully from CDN")
-                  turnLoaded = true
-                  break
-                }
-              } catch (error) {
-                console.warn(`[Catalog] Error loading Turn.js from ${cdn}, trying next...`, error)
-                continue
-              }
+            // Verificar que jQuery esté disponible
+            if (!jQueryRef || typeof jQueryRef.fn === "undefined") {
+              console.error("[Catalog] jQuery not available for Turn.js")
+              setIsLoading(false)
+              return
             }
-
-            // Estrategia 2: Si los CDN fallan, intentar cargar desde node_modules
-            // turn.js usa require('jquery') y extiende $.fn cuando se importa
-            if (!turnLoaded) {
-              try {
-                console.log("[Catalog] Attempting to load Turn.js from node_modules...")
-                jQueryRef = (window as any).jQuery
+            
+            // Asegurar que jQuery esté disponible globalmente
+            if (!(window as any).jQuery) {
+              (window as any).jQuery = jQueryRef
+            }
+            if (!(window as any).$) {
+              (window as any).$ = jQueryRef
+            }
+            
+            // También asegurar en globalThis
+            if (typeof globalThis !== 'undefined') {
+              (globalThis as any).jQuery = jQueryRef
+              ;(globalThis as any).$ = jQueryRef
+            }
+            
+            // Esperar un momento para asegurar que jQuery esté completamente sincronizado
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            
+            let turnLoaded = false
+            
+            try {
+              // Cargar turn.js desde public (archivo local modificado)
+              console.log("[Catalog] Loading Turn.js from /turn.js")
+              
+              const script = document.createElement("script")
+              script.src = "/turn.js"
+              script.async = false
+              script.id = "turnjs-script"
+              
+              await new Promise<void>((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                  if (script.parentNode) {
+                    script.remove()
+                  }
+                  reject(new Error(`Timeout loading Turn.js`))
+                }, LOAD_TIMEOUT)
                 
-                if (!jQueryRef || typeof jQueryRef.fn === "undefined") {
-                  console.warn("[Catalog] jQuery not available for Turn.js import")
-                } else {
-                  // Asegurar que jQuery esté disponible globalmente y como módulo
-                  // turn.js usa require('jquery'), así que necesitamos que jQuery esté disponible
-                  // tanto globalmente como en el sistema de módulos
-                  
-                  // 1. Asegurar que jQuery esté en window
-                  if (!(window as any).jQuery) {
-                    (window as any).jQuery = jQueryRef
-                  }
-                  if (!(window as any).$) {
-                    (window as any).$ = jQueryRef
-                  }
-                  
-                    // 2. Importar jQuery como módulo y asegurar sincronización
-                  try {
-                    // Importar jQuery primero
-                    const jQueryModule = await import("jquery")
-                    const jQueryFromModule = jQueryModule.default || jQueryModule
-                    
-                    // CRÍTICO: Asegurar que jQuery esté disponible globalmente ANTES de importar turn.js
-                    // turn.js usa require('jquery'), que debe resolver al jQuery global
-                    if (jQueryFromModule) {
-                      // Hacer que jQuery esté disponible globalmente
-                      // webpack ProvidePlugin debería hacer que require('jquery') en turn.js
-                      // resuelva al mismo jQuery que está aquí
-                      (window as any).jQuery = jQueryFromModule
-                      (window as any).$ = jQueryFromModule
-                      jQueryRef = jQueryFromModule
-                    }
-                    
-                    console.log("[Catalog] jQuery synchronized globally, importing turn.js...")
-                    console.log("[Catalog] jQuery.fn available:", typeof jQueryRef?.fn !== "undefined")
-                    
-                    // 3. Importar turn.js - esto ejecutará el código que extiende $.fn
-                    // El código en turn.js/index.js hace: $.extend($.fn, { turn: ..., flip: ... })
-                    // IMPORTANTE: turn.js usa require('jquery') en la línea 1, así que jQuery debe estar disponible
-                    await import("turn.js")
-                    console.log("[Catalog] Turn.js module imported")
-                    
-                    // 4. Esperar a que el código de extensión se ejecute
-                    // turn.js extiende jQuery.fn inmediatamente cuando se importa (línea 1837-1907)
-                    await new Promise((resolve) => setTimeout(resolve, 300))
-                    
-                    // 5. Verificar que turn está disponible en el jQuery global
+                script.onload = () => {
+                  clearTimeout(timeout)
+                  // Esperar a que el script se ejecute completamente
+                  setTimeout(() => {
                     jQueryRef = (window as any).jQuery
                     if (jQueryRef && typeof jQueryRef.fn?.turn === "function") {
-                      console.log("[Catalog] ✅ Turn.js loaded successfully from node_modules")
+                      console.log("[Catalog] ✅ Turn.js loaded successfully")
                       turnLoaded = true
+                      resolve()
                     } else {
-                      // El código de turn.js puede no haberse ejecutado correctamente
-                      console.warn("[Catalog] ⚠️ Turn.js imported but jQuery.fn.turn not found")
-                      console.warn("[Catalog] jQuery available:", !!jQueryRef)
-                      console.warn("[Catalog] jQuery.fn available:", !!jQueryRef?.fn)
-                      
-                      // Esperar más tiempo - a veces el módulo tarda en ejecutarse
-                      let attempts = 0
-                      const maxAttempts = 30
-                      while (attempts < maxAttempts && !turnLoaded) {
-                        await new Promise((resolve) => setTimeout(resolve, 100))
+                      // Esperar un poco más
+                      setTimeout(() => {
                         jQueryRef = (window as any).jQuery
                         if (jQueryRef && typeof jQueryRef.fn?.turn === "function") {
                           console.log("[Catalog] ✅ Turn.js became available after waiting")
                           turnLoaded = true
-                          break
+                          resolve()
+                        } else {
+                          if (script.parentNode) {
+                            script.remove()
+                          }
+                          reject(new Error("Turn.js loaded but jQuery.fn.turn not available"))
                         }
-                        attempts++
-                      }
-                      
-                      if (!turnLoaded) {
-                        console.error("[Catalog] ❌ Turn.js imported but jQuery.fn.turn is still not available")
-                        console.error("[Catalog] This may indicate that turn.js's require('jquery') resolved to a different jQuery instance")
-                        if (jQueryRef?.fn) {
-                          const methods = Object.keys(jQueryRef.fn)
-                          console.error("[Catalog] Available jQuery.fn methods:", methods.slice(0, 20))
-                          console.error("[Catalog] Looking for 'turn' in methods:", methods.includes('turn'))
-                        }
-                      }
+                      }, 500)
                     }
-                  } catch (importError) {
-                    console.error("[Catalog] ❌ Failed to import Turn.js module:", importError)
-                    if (importError instanceof Error) {
-                      console.error("[Catalog] Error message:", importError.message)
-                      if (importError.stack) {
-                        console.error("[Catalog] Error stack:", importError.stack)
-                      }
-                    }
-                  }
+                  }, 300)
                 }
-              } catch (error) {
-                console.error("[Catalog] Failed to load Turn.js from node_modules:", error)
-              }
-            }
-
-            // Esperar un poco más y verificar de nuevo
-            if (!turnLoaded) {
-              console.log("[Catalog] Waiting for Turn.js to become available...")
-              await new Promise((resolve) => setTimeout(resolve, 500))
-              jQueryRef = (window as any).jQuery
-              if (jQueryRef && typeof jQueryRef.fn?.turn === "function") {
-                console.log("[Catalog] Turn.js became available after waiting")
-                turnLoaded = true
-              }
+                
+                script.onerror = () => {
+                  clearTimeout(timeout)
+                  if (script.parentNode) {
+                    script.remove()
+                  }
+                  reject(new Error("Failed to load Turn.js script"))
+                }
+                
+                document.head.appendChild(script)
+              })
+            } catch (loadError) {
+              console.error("[Catalog] ❌ Failed to load Turn.js:", loadError)
+              setIsLoading(false)
+              return
             }
 
             // Verificación final
             jQueryRef = (window as any).jQuery
             const turnAvailable = jQueryRef && typeof jQueryRef.fn?.turn === "function"
             if (!turnLoaded || !turnAvailable) {
-              console.warn("[Catalog] Failed to load Turn.js from all sources, will show fallback view")
+              console.warn("[Catalog] Turn.js not available after loading, will show fallback view")
               setIsLoading(false)
               return
             }
@@ -399,12 +372,27 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
             console.log("[Catalog] Turn.js already available")
           }
 
-          // Cargar CSS de Turn.js (no bloqueante)
+          // Cargar CSS de Turn.js (inline para evitar CDN)
           if (!document.getElementById("turnjs-css")) {
-            const turnCss = document.createElement("link")
+            const turnCss = document.createElement("style")
             turnCss.id = "turnjs-css"
-            turnCss.rel = "stylesheet"
-            turnCss.href = "https://cdn.jsdelivr.net/npm/turn.js@4.1.0/turn.css"
+            turnCss.textContent = `
+              .turn-page-wrapper {
+                position: absolute;
+                overflow: hidden;
+              }
+              .turn-page {
+                position: relative;
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+              }
+              .hard {
+                background: white;
+                box-shadow: inset 0 0 5px #666;
+              }
+            `
             document.head.appendChild(turnCss)
           }
 
@@ -442,7 +430,9 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
                 pages: totalPages,
                 gradients: true,
                 elevation: 50,
-                duration: 1000,
+                duration: 800, // Animación más rápida y fluida
+                acceleration: true, // Aceleración de hardware
+                display: 'double', // Modo doble página
                 when: {
                   turning: function (event: any, page: number) {
                     setCurrentPage(page)
