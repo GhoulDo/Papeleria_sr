@@ -123,18 +123,18 @@ export default function CatalogPage() {
         cartId = cart.id
       }
 
-      // Verificar si el producto ya está en el carrito
+      // Verificar si el producto ya está en el carrito usando maybeSingle para evitar 406
       const { data: existingItem, error: checkError } = await supabase
         .from("cart_items")
         .select("id, quantity")
         .eq("cart_id", cartId)
         .eq("product_id", productId)
-        .single()
+        .maybeSingle() // Usar maybeSingle en lugar de single para evitar 406
 
-      if (checkError && checkError.code !== "PGRST116") {
-        // Error diferente a "no encontrado"
+      if (checkError) {
+        // Error al verificar (no es "no encontrado")
         console.error("Error checking cart item:", checkError)
-        throw checkError
+        // Continuar e intentar insertar - si falla con 409, manejaremos ese caso
       }
 
       if (existingItem) {
@@ -150,29 +150,69 @@ export default function CatalogPage() {
         }
 
         toast({
-          title: "Cantidad actualizada",
+          title: "✅ Cantidad actualizada",
           description: `${productName} - cantidad aumentada en el carrito`,
+          duration: 3000,
         })
-      } else {
-        // Producto no existe, agregarlo
-        const { error: insertError } = await supabase
-          .from("cart_items")
-          .insert({
-            cart_id: cartId,
-            product_id: productId,
-            quantity: 1,
-          })
+        return // Salir exitosamente
+      }
 
-        if (insertError) {
-          console.error("Error inserting cart item:", insertError)
-          throw insertError
+      // Producto no existe, intentar agregarlo
+      const { error: insertError } = await supabase
+        .from("cart_items")
+        .insert({
+          cart_id: cartId,
+          product_id: productId,
+          quantity: 1,
+        })
+
+      // Si hay error 409 (conflicto), el producto existe pero no lo detectamos
+      // Intentar actualizar la cantidad en su lugar
+      if (insertError && insertError.code === "23505") {
+        // Error de constraint único - el producto ya existe
+        // Obtener el item existente y actualizar
+        const { data: existingItemRetry, error: retryError } = await supabase
+          .from("cart_items")
+          .select("id, quantity")
+          .eq("cart_id", cartId)
+          .eq("product_id", productId)
+          .maybeSingle()
+
+        if (retryError || !existingItemRetry) {
+          console.error("Error fetching existing item after conflict:", retryError)
+          throw insertError // Lanzar el error original
+        }
+
+        // Actualizar la cantidad
+        const { error: updateError } = await supabase
+          .from("cart_items")
+          .update({ quantity: existingItemRetry.quantity + 1 })
+          .eq("id", existingItemRetry.id)
+
+        if (updateError) {
+          console.error("Error updating cart item after conflict:", updateError)
+          throw updateError
         }
 
         toast({
-          title: "Producto agregado",
-          description: `${productName} agregado al carrito`,
+          title: "✅ Cantidad actualizada",
+          description: `${productName} - cantidad aumentada en el carrito`,
+          duration: 3000,
         })
+        return
       }
+
+      if (insertError) {
+        console.error("Error inserting cart item:", insertError)
+        throw insertError
+      }
+
+      // Éxito - producto agregado
+      toast({
+        title: "✅ Producto agregado",
+        description: `${productName} se agregó correctamente al carrito`,
+        duration: 3000,
+      })
     } catch (error: any) {
       console.error("Error adding to cart:", error)
       

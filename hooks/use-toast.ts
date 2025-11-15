@@ -6,7 +6,7 @@ import * as React from 'react'
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000 // 5 segundos por defecto, se puede sobrescribir con duration
 
 type ToasterToast = ToastProps & {
   id: string
@@ -55,7 +55,7 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-const addToRemoveQueue = (toastId: string) => {
+const addToRemoveQueue = (toastId: string, delay?: number) => {
   if (toastTimeouts.has(toastId)) {
     return
   }
@@ -66,7 +66,7 @@ const addToRemoveQueue = (toastId: string) => {
       type: 'REMOVE_TOAST',
       toastId: toastId,
     })
-  }, TOAST_REMOVE_DELAY)
+  }, delay ?? TOAST_REMOVE_DELAY)
 
   toastTimeouts.set(toastId, timeout)
 }
@@ -139,7 +139,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
-function toast({ ...props }: Toast) {
+function toast({ duration, ...props }: Toast & { duration?: number }) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -160,6 +160,13 @@ function toast({ ...props }: Toast) {
       },
     },
   })
+
+  // Programar eliminación automática si se especifica duration
+  if (duration !== undefined && duration > 0) {
+    addToRemoveQueue(id, duration)
+  } else {
+    addToRemoveQueue(id)
+  }
 
   return {
     id: id,
