@@ -40,6 +40,47 @@
   }
 }
 
+/* Optimizaciones de animaciones para móviles */
+@media (max-width: 768px) {
+  /* Mejorar rendimiento de animaciones del Sheet */
+  [data-slot="sheet-content"] {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+  
+  [data-slot="sheet-overlay"] {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: opacity;
+  }
+  
+  /* Optimizar transiciones táctiles */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Mejorar animaciones de iconos */
+  svg {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Reducir animaciones si el usuario prefiere movimiento reducido */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #3d2817;

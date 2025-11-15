@@ -436,6 +436,10 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
                 overflow: hidden;
                 width: 100%;
                 height: 100%;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                -webkit-perspective: 1000px;
+                perspective: 1000px;
               }
               .turn-page {
                 position: relative;
@@ -448,6 +452,11 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
                 width: 100%;
                 height: 100%;
                 box-sizing: border-box;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                -webkit-perspective: 1000px;
+                perspective: 1000px;
+                will-change: transform;
               }
               .hard {
                 background: white;
@@ -456,29 +465,159 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
                 height: 100%;
                 overflow: hidden;
                 box-sizing: border-box;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                will-change: transform;
+                transform: translateZ(0);
               }
               #flipbook {
                 position: relative;
                 overflow: hidden !important;
                 box-sizing: border-box;
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
               }
-              /* Mejoras para móviles */
+              /* ============================================
+                 OPTIMIZACIONES COMPLETAS PARA ANIMACIONES 
+                 DE HOJAS EN MÓVILES - IMPLEMENTACIÓN AVANZADA
+                 ============================================ */
               @media (max-width: 768px) {
-              #flipbook {
-                touch-action: pan-y pinch-zoom;
-                -webkit-overflow-scrolling: touch;
-                max-height: 100vh;
-                overflow: hidden !important;
-                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4) !important;
-              }
+                /* Contenedor principal del flipbook */
+                #flipbook {
+                  touch-action: pan-y pinch-zoom;
+                  -webkit-overflow-scrolling: touch;
+                  max-height: 100vh;
+                  overflow: hidden !important;
+                  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4) !important;
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  will-change: transform;
+                  /* Forzar aceleración por hardware */
+                  -webkit-perspective: 1000px;
+                  perspective: 1000px;
+                  /* Optimizar composición de capas */
+                  isolation: isolate;
+                }
+                
+                /* Páginas individuales - Optimización de animación */
                 .turn-page {
                   -webkit-tap-highlight-color: rgba(0,0,0,0);
                   max-height: 100%;
                   overflow: hidden;
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  will-change: transform;
+                  /* ELIMINAR transiciones CSS que interfieren con turn.js */
+                  /* Las animaciones son manejadas por turn.js, no por CSS */
+                  transition: none !important;
+                  -webkit-transition: none !important;
+                  /* Optimizar renderizado */
+                  -webkit-backface-visibility: hidden;
+                  backface-visibility: hidden;
+                  contain: layout style paint;
                 }
+                
+                /* Hojas (hard) - Optimización de flip */
                 .hard {
                   max-height: 100%;
                   overflow: hidden;
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  will-change: transform;
+                  /* ELIMINAR transiciones que interfieren */
+                  transition: none !important;
+                  -webkit-transition: none !important;
+                  /* Aceleración por hardware */
+                  -webkit-backface-visibility: hidden;
+                  backface-visibility: hidden;
+                  -webkit-transform-style: preserve-3d;
+                  transform-style: preserve-3d;
+                  /* Optimizar composición */
+                  contain: layout style paint;
+                }
+                
+                /* Wrapper de páginas - Optimización de zonas táctiles */
+                .turn-page-wrapper {
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  will-change: transform;
+                  /* ELIMINAR transiciones que interfieren */
+                  transition: none !important;
+                  -webkit-transition: none !important;
+                  /* Optimizar renderizado */
+                  -webkit-backface-visibility: hidden;
+                  backface-visibility: hidden;
+                  contain: layout style paint;
+                }
+                
+                /* Mejorar la respuesta táctil - Áreas de toque */
+                .turn-page-wrapper,
+                .hard {
+                  touch-action: manipulation;
+                  -webkit-touch-callout: none;
+                  -webkit-user-drag: none;
+                  /* Área táctil aumentada visualmente (no afecta funcionalidad) */
+                  position: relative;
+                }
+                
+                /* Optimizar durante el flip activo */
+                .hard[data-flipping="true"],
+                .turn-page-wrapper[data-flipping="true"] {
+                  will-change: transform;
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  /* Forzar capa de composición */
+                  z-index: 999;
+                }
+                
+                /* Optimizar páginas durante interacción táctil */
+                .hard:active,
+                .turn-page-wrapper:active {
+                  will-change: transform;
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                }
+                
+                /* Efecto de volteo - Optimización 3D */
+                .hard .flip,
+                .hard [class*="flip"] {
+                  -webkit-transform-style: preserve-3d;
+                  transform-style: preserve-3d;
+                  -webkit-backface-visibility: hidden;
+                  backface-visibility: hidden;
+                  will-change: transform;
+                }
+                
+                /* Gradientes durante el flip - Optimización */
+                .hard .gradient {
+                  -webkit-transform: translateZ(0);
+                  transform: translateZ(0);
+                  will-change: opacity;
+                }
+                
+                /* Optimizar sombras durante animación */
+                .hard[data-flipping="true"] {
+                  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15) !important;
+                }
+                
+                /* Prevenir reflows durante animaciones */
+                .hard,
+                .turn-page,
+                .turn-page-wrapper {
+                  contain: layout style paint;
+                }
+                
+                /* Optimización para dispositivos de baja potencia */
+                @media (prefers-reduced-motion: no-preference) {
+                  /* Solo aplicar optimizaciones si el usuario no prefiere movimiento reducido */
+                  .hard,
+                  .turn-page,
+                  .turn-page-wrapper {
+                    -webkit-transform: translateZ(0);
+                    transform: translateZ(0);
+                  }
                 }
               }
             `
@@ -565,27 +704,181 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
               flipbookRef.current.style.minHeight = `${flipbookHeight}px`
               flipbookRef.current.style.maxHeight = `${flipbookHeight}px`
               flipbookRef.current.style.overflow = 'hidden'
+              
+              // Optimizaciones de rendimiento para móviles
+              if (isMobileDevice) {
+                flipbookRef.current.style.willChange = 'transform'
+                flipbookRef.current.style.webkitTransform = 'translateZ(0)'
+                flipbookRef.current.style.transform = 'translateZ(0)'
+              }
 
-              turnInstanceRef.current = jQueryFinal(flipbookRef.current).turn({
+              // Configuración optimizada para móviles
+              const turnConfig: any = {
                 width: flipbookWidth,
                 height: flipbookHeight,
                 autoCenter: true,
-                pages: totalPagesCalc, // Usar el cálculo correcto
+                pages: totalPagesCalc,
                 gradients: true,
-                elevation: isMobileDevice ? 30 : 60, // Mayor elevación para mejor efecto 3D
-                duration: isMobileDevice ? 600 : 1000, // Animación más suave y fluida
                 acceleration: true, // Aceleración de hardware
-                display: displayMode, // Modo single en móviles, double en desktop
+                display: displayMode,
                 when: {
                   turning: function (event: any, page: number) {
                     setCurrentPage(page)
+                    // Optimización móvil: marcar páginas como "flipping" para CSS
+                    if (isMobileDevice && flipbookRef.current) {
+                      const jQueryRef = (window as any).jQuery
+                      if (jQueryRef) {
+                        jQueryRef(flipbookRef.current).find('.hard').attr('data-flipping', 'true')
+                      }
+                    }
                   },
                   turned: function (event: any, page: number) {
                     setCurrentPage(page)
-                    console.log("[Catalog] Turned to page:", page, "of", totalPagesCalc)
+                    // Remover marca de "flipping" después de la animación
+                    if (isMobileDevice && flipbookRef.current) {
+                      const jQueryRef = (window as any).jQuery
+                      if (jQueryRef) {
+                        setTimeout(() => {
+                          jQueryRef(flipbookRef.current).find('.hard').removeAttr('data-flipping')
+                        }, 100)
+                      }
+                    }
+                    console.log("[Catalog] ✅ Turned to page:", page, "of", totalPagesCalc)
+                  },
+                  start: function (event: any, pageObject: any, corner: any) {
+                    // Optimización: preparar elementos antes de animación
+                    if (isMobileDevice && flipbookRef.current) {
+                      const jQueryRef = (window as any).jQuery
+                      if (jQueryRef) {
+                        jQueryRef(flipbookRef.current).find('.hard').each(function() {
+                          const $page = jQueryRef(this)
+                          $page.css({
+                            'will-change': 'transform',
+                            '-webkit-transform': 'translateZ(0)',
+                            'transform': 'translateZ(0)'
+                          })
+                        })
+                      }
+                    }
+                  },
+                  end: function (event: any, pageObject: any, corner: any) {
+                    // Optimización: limpiar después de animación
+                    if (isMobileDevice && flipbookRef.current) {
+                      const jQueryRef = (window as any).jQuery
+                      if (jQueryRef) {
+                        setTimeout(() => {
+                          jQueryRef(flipbookRef.current).find('.hard').each(function() {
+                            const $page = jQueryRef(this)
+                            if (!$page.attr('data-flipping')) {
+                              $page.css('will-change', 'auto')
+                            }
+                          })
+                        }, 200)
+                      }
+                    }
                   },
                 },
-              })
+              }
+
+              // Optimizaciones específicas para móviles - ANÁLISIS COMPLETO
+              if (isMobileDevice) {
+                // Configuración optimizada para animaciones de hojas en móviles
+                turnConfig.elevation = 50 // Elevación balanceada: suficiente 3D sin sobrecargar GPU
+                turnConfig.duration = 500 // Duración más rápida para mejor respuesta táctil (500ms vs 600ms)
+                turnConfig.corners = {
+                  forward: ['br', 'tr'],
+                  backward: ['bl', 'tl'],
+                  all: ['tl', 'bl', 'tr', 'br']
+                }
+                
+                console.log("[Catalog] 📱 Mobile page flip optimizations:", {
+                  elevation: turnConfig.elevation,
+                  duration: turnConfig.duration + 'ms',
+                  display: displayMode,
+                  cornerSize: "150px (enhanced)",
+                  hardwareAccel: true
+                })
+                
+                // Configurar cornerSize más grande para mejor detección táctil
+                // Aumentar a 150px para mejor área de toque en móviles
+                // Usar múltiples intentos para asegurar que todas las páginas se optimicen
+                const optimizePages = () => {
+                  try {
+                    if (flipbookRef.current && typeof jQueryFinal.fn.flip !== 'undefined') {
+                      let optimizedCount = 0
+                      const $pages = jQueryFinal(flipbookRef.current).find('.hard')
+                      
+                      $pages.each(function() {
+                        const $page = jQueryFinal(this)
+                        const flipData = $page.data('f')
+                        if (flipData && flipData.opts) {
+                          // Zona táctil aumentada a 150px (50% más grande que default)
+                          flipData.opts.cornerSize = 150
+                          // Optimizar duración de flip individual
+                          flipData.opts.duration = 500 // Sincronizar con turnConfig
+                          optimizedCount++
+                        } else {
+                          // Si no tiene datos de flip aún, intentar inicializar
+                          try {
+                            if (typeof $page.flip === 'function') {
+                              const currentOpts = $page.data('f')?.opts || {}
+                              $page.flip({
+                                ...currentOpts,
+                                cornerSize: 150,
+                                duration: 500
+                              })
+                            }
+                          } catch (e) {
+                            // Ignorar errores de inicialización individual
+                          }
+                        }
+                      })
+                      
+                      if (optimizedCount > 0) {
+                        console.log(`[Catalog] ✅ Optimized ${optimizedCount}/${$pages.length} pages for mobile touch`)
+                      }
+                      
+                      return optimizedCount
+                    }
+                  } catch (e) {
+                    console.warn("[Catalog] ⚠️ Could not optimize corner size:", e)
+                    return 0
+                  }
+                  return 0
+                }
+                
+                // Intentar optimizar inmediatamente después de que turn.js inicialice
+                setTimeout(() => {
+                  let optimizedCount = optimizePages()
+                  
+                  // Reintentar después de delays para páginas que se cargan dinámicamente
+                  // Turn.js carga páginas bajo demanda, así que necesitamos múltiples intentos
+                  const retryOptimization = (attempt: number, maxAttempts: number = 5) => {
+                    if (attempt < maxAttempts) {
+                      setTimeout(() => {
+                        const newCount = optimizePages()
+                        if (newCount < totalPagesCalc && attempt < maxAttempts - 1) {
+                          retryOptimization(attempt + 1, maxAttempts)
+                        } else if (newCount >= totalPagesCalc) {
+                          console.log(`[Catalog] 🎉 All ${totalPagesCalc} pages optimized for mobile!`)
+                        }
+                      }, 300 * (attempt + 1)) // Delay incremental
+                    }
+                  }
+                  
+                  // Iniciar reintentos si no se optimizaron todas
+                  if (optimizedCount < totalPagesCalc) {
+                    retryOptimization(0)
+                  } else {
+                    console.log(`[Catalog] 🎉 All ${totalPagesCalc} pages optimized for mobile!`)
+                  }
+                }, 500) // Esperar a que turn.js inicialice completamente
+              } else {
+                turnConfig.elevation = 60
+                turnConfig.duration = 1000
+              }
+
+              turnInstanceRef.current = jQueryFinal(flipbookRef.current).turn(turnConfig)
 
               scriptsLoadedRef.current = true
               setTurnLoaded(true)
