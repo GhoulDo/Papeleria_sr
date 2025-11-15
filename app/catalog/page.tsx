@@ -92,44 +92,101 @@ export default function CatalogPage() {
     }
 
     try {
+      // Obtener o crear carrito
+      let cartId: string
+
       const { data: cart, error: cartError } = await supabase
         .from("carts")
         .select("id")
         .eq("user_id", user.id)
         .single()
 
-      if (cartError && cartError.code !== "PGRST116") {
-        // Crear carrito si no existe
+      if (cartError && cartError.code === "PGRST116") {
+        // Carrito no existe, crear uno nuevo
         const { data: newCart, error: createError } = await supabase
           .from("carts")
           .insert({ user_id: user.id })
           .select()
           .single()
 
-        if (createError) throw createError
+        if (createError) {
+          console.error("Error creating cart:", createError)
+          throw createError
+        }
 
-        await supabase.from("cart_items").upsert({
-          cart_id: newCart.id,
-          product_id: productId,
-          quantity: 1,
+        cartId = newCart.id
+      } else if (cartError) {
+        // Otro error al obtener el carrito
+        console.error("Error fetching cart:", cartError)
+        throw cartError
+      } else {
+        cartId = cart.id
+      }
+
+      // Verificar si el producto ya está en el carrito
+      const { data: existingItem, error: checkError } = await supabase
+        .from("cart_items")
+        .select("id, quantity")
+        .eq("cart_id", cartId)
+        .eq("product_id", productId)
+        .single()
+
+      if (checkError && checkError.code !== "PGRST116") {
+        // Error diferente a "no encontrado"
+        console.error("Error checking cart item:", checkError)
+        throw checkError
+      }
+
+      if (existingItem) {
+        // Producto ya existe, incrementar cantidad
+        const { error: updateError } = await supabase
+          .from("cart_items")
+          .update({ quantity: existingItem.quantity + 1 })
+          .eq("id", existingItem.id)
+
+        if (updateError) {
+          console.error("Error updating cart item:", updateError)
+          throw updateError
+        }
+
+        toast({
+          title: "Cantidad actualizada",
+          description: `${productName} - cantidad aumentada en el carrito`,
         })
       } else {
-        await supabase.from("cart_items").upsert({
-          cart_id: cart.id,
-          product_id: productId,
-          quantity: 1,
+        // Producto no existe, agregarlo
+        const { error: insertError } = await supabase
+          .from("cart_items")
+          .insert({
+            cart_id: cartId,
+            product_id: productId,
+            quantity: 1,
+          })
+
+        if (insertError) {
+          console.error("Error inserting cart item:", insertError)
+          throw insertError
+        }
+
+        toast({
+          title: "Producto agregado",
+          description: `${productName} agregado al carrito`,
         })
+      }
+    } catch (error: any) {
+      console.error("Error adding to cart:", error)
+      
+      // Mensaje de error más específico
+      let errorMessage = "No se pudo agregar el producto al carrito"
+      if (error?.code === "23505") {
+        errorMessage = "El producto ya está en el carrito"
+      } else if (error?.message) {
+        errorMessage = error.message
       }
 
       toast({
-        title: "Producto agregado",
-        description: `${productName} agregado al carrito`,
-      })
-    } catch (error) {
-      console.error("Error adding to cart:", error)
-      toast({
         title: "Error",
-        description: "No se pudo agregar el producto al carrito",
+        description: errorMessage,
         variant: "destructive",
       })
     }

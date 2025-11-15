@@ -917,11 +917,26 @@ export function CatalogFlipbook({ products, onAddToCart }: CatalogFlipbookProps)
 
     return () => {
       clearTimeout(timeoutId)
-      if (turnInstanceRef.current && typeof turnInstanceRef.current.turn === "function") {
+      if (turnInstanceRef.current) {
         try {
-          turnInstanceRef.current.turn("destroy")
+          const jQueryRef = (window as any).jQuery
+          if (jQueryRef && typeof jQueryRef.fn.turn === "function") {
+            // Método correcto para destruir turn.js
+            jQueryRef(turnInstanceRef.current).turn("destroy")
+          } else if (typeof turnInstanceRef.current.turn === "function") {
+            // Fallback: intentar destruir directamente
+            try {
+              turnInstanceRef.current.turn("destroy")
+            } catch (destroyError) {
+              // Si destroy no funciona, simplemente limpiar la referencia
+              console.warn("[Catalog] Could not destroy turn instance, cleaning up reference")
+            }
+          }
         } catch (e) {
-          console.error("Error destroying turn instance:", e)
+          // Silenciar errores de destrucción - no es crítico
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[Catalog] Error during cleanup:", e)
+          }
         }
         turnInstanceRef.current = null
       }
