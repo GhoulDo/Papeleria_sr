@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Navbar } from "@/components/navbar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Loader2, BookOpen } from "lucide-react"
+import { Loader2, BookOpen, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { CatalogFlipbook } from "@/components/catalog-flipbook"
+import { useRouter } from "next/navigation"
 
 interface Product {
   id: string
@@ -28,6 +27,7 @@ interface Product {
 export default function CatalogPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -137,13 +137,10 @@ export default function CatalogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
-        <Navbar />
-        <div className="flex h-[80vh] items-center justify-center">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-[#5C4033] mx-auto" />
-            <p className="text-[#6B5D52] text-lg">Cargando catálogo...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-[#3D2817] via-[#5C4033] to-[#8B6F47] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-16 w-16 animate-spin text-white mx-auto" />
+          <p className="text-white/90 text-lg font-medium">Cargando catálogo...</p>
         </div>
       </div>
     )
@@ -152,25 +149,32 @@ export default function CatalogPage() {
   // Mostrar mensaje si no hay productos (puede ser por error de conexión)
   if (products.length === 0 && !loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
-        <Navbar />
-        <div className="flex h-[80vh] items-center justify-center">
-          <div className="text-center space-y-6 max-w-md mx-auto px-4">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-[#F5F1ED] to-white border-2 border-[#E1D5C8] flex items-center justify-center">
-              <BookOpen className="h-12 w-12 text-[#8B6F47]" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-[#3D2817]">No se pudieron cargar los productos</h2>
-              <p className="text-[#6B5D52]">
-                Por favor, verifica tu conexión a internet e intenta nuevamente.
-              </p>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-[#3D2817] via-[#5C4033] to-[#8B6F47] flex items-center justify-center px-4">
+        <div className="text-center space-y-6 max-w-md mx-auto">
+          <div className="w-24 h-24 mx-auto rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center">
+            <BookOpen className="h-12 w-12 text-white" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white">No se pudieron cargar los productos</h2>
+            <p className="text-white/80">
+              Por favor, verifica tu conexión a internet e intenta nuevamente.
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center">
+            <Button
+              onClick={() => router.back()}
+              variant="outline"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver
+            </Button>
             <Button
               onClick={() => {
                 setLoading(true)
                 window.location.reload()
               }}
-              className="bg-gradient-to-r from-[#5C4033] to-[#3D2817] text-white hover:from-[#3D2817] hover:to-[#2A1C10]"
+              className="bg-white text-[#5C4033] hover:bg-white/90"
             >
               Reintentar
             </Button>
@@ -181,35 +185,30 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F7F1EB] via-[#FBF8F4] to-white">
-      <Navbar />
-
-      {/* Header */}
-      <div className="border-b border-[#E1D5C8] bg-gradient-to-r from-[#F5F1ED] to-white py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <BookOpen className="h-8 w-8 text-[#5C4033]" />
-                <h1 className="text-4xl font-bold text-[#3D2817]">Catálogo Digital</h1>
-              </div>
-              <p className="text-[#6B5D52] text-lg">
-                Explora nuestros productos como si fuera una revista
-              </p>
-            </div>
-            <Badge className="bg-[#5C4033] text-white px-4 py-2 text-sm">
-              {products.length} productos
-            </Badge>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#3D2817] via-[#5C4033] to-[#8B6F47] relative overflow-hidden">
+      {/* Fondo decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#C97D2E]/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#8B6F47]/20 rounded-full blur-3xl" />
       </div>
 
-      {/* Flipbook Container */}
-      <div className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-center gap-8">
-            <CatalogFlipbook products={products} onAddToCart={handleAddToCart} />
-          </div>
+      {/* Botón de volver */}
+      <div className="absolute top-4 left-4 z-50">
+        <Button
+          onClick={() => router.back()}
+          variant="outline"
+          size="lg"
+          className="border-white/30 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 shadow-lg"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Volver
+        </Button>
+      </div>
+
+      {/* Flipbook Container - Centrado y con espacio */}
+      <div className="min-h-screen flex items-center justify-center py-8 px-4">
+        <div className="w-full max-w-7xl">
+          <CatalogFlipbook products={products} onAddToCart={handleAddToCart} />
         </div>
       </div>
     </div>
